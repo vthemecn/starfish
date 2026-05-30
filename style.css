@@ -1,0 +1,792 @@
+/**
+ * Copyright (c) vtheme.cn
+ *
+ * @author vthemecn <mail@vtheme.cn>
+ * @link https://vtheme.cn
+ */
+
+/**
+ * StarFish - WordPress 配置框架样式
+ * 
+ * 注意：严禁使用 gap 属性，所有间距通过 margin 和 padding 实现
+ * 遵循 WordPress 原生样式规范
+ * 采用移动优先（Mobile First）策略
+ */
+
+/* ==================== 基础布局（移动端默认）==================== */
+.starfish-wrapper {
+  max-width: 100%;
+}
+
+.starfish-form {
+  /* background: #fff; */
+  margin-top: 20px;
+}
+
+.starfish-form p{
+  color: #a1a0a0;
+}
+
+/* ==================== 表单表格样式（WordPress标准）==================== */
+.starfish-form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.starfish-form-table tr {
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.starfish-form-table tr:last-child {
+  border-bottom: none;
+}
+
+/* 移动端：表格单元格堆叠显示 */
+.starfish-form-table th,
+.starfish-form-table td {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.starfish-form-table th {
+  padding-bottom: 5px;
+}
+
+@media screen and (min-width: 782px) {
+
+  .starfish-form-table th,
+  .starfish-form-table td {
+    display: table-cell;
+  }
+
+  .starfish-form-table th {
+    width: 200px;
+    min-width: 200px;
+    padding: 20px 10px 20px 0;
+    text-align: left;
+    vertical-align: top;
+    font-weight: 600;
+    color: #1d2327;
+  }
+
+  .starfish-form-table td {
+    padding: 20px 10px;
+    vertical-align: top;
+  }
+}
+
+/* ==================== 字段容器 ==================== */
+.starfish-field {
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.starfish-field.starfish-hidden {
+  display: none;
+}
+
+/* ==================== 字段标签 ==================== */
+.starfish-field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #1d2327;
+  font-size: 14px;
+}
+
+.starfish-field-desc {
+  margin: 5px 0 0 0;
+  padding: 0;
+  color: #646970;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.starfish-field-content {
+  margin-top: 0;
+}
+
+/* ==================== 文本输入框 ==================== */
+.starfish-field input[type="text"],
+.starfish-field input[type="number"],
+.starfish-field input[type="email"],
+.starfish-field input[type="url"],
+.starfish-field textarea,
+.starfish-field select {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media screen and (min-width: 782px) {
+
+  .starfish-field input[type="text"],
+  .starfish-field input[type="number"],
+  .starfish-field input[type="email"],
+  .starfish-field input[type="url"],
+  .starfish-field textarea,
+  .starfish-field select {
+    max-width: 400px;
+  }
+}
+
+.starfish-field textarea {
+  resize: vertical;
+}
+
+/* ==================== 单选框组 ==================== */
+.starfish-radio-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.starfish-radio-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+@media screen and (min-width: 782px) {
+  .starfish-radio-group.starfish-inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .starfish-radio-group.starfish-inline .starfish-radio-label {
+    margin-right: 20px;
+  }
+}
+
+.starfish-radio-label input[type="radio"] {
+  margin-right: 6px;
+}
+
+.starfish-radio-text {
+  font-size: 14px;
+  color: #2c3338;
+}
+
+/* ==================== 复选框组 ==================== */
+.starfish-checkbox-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.starfish-checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+@media screen and (min-width: 782px) {
+  .starfish-checkbox-group.starfish-inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .starfish-checkbox-group.starfish-inline .starfish-checkbox-label {
+    margin-right: 20px;
+  }
+}
+
+.starfish-checkbox-label input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+.starfish-checkbox-text {
+  font-size: 14px;
+  color: #2c3338;
+}
+
+/* ==================== 开关切换器 ==================== */
+.starfish-switcher {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.starfish-switcher input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.starfish-switcher-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #8c8f94;
+  border-radius: 10px;
+  transition: 0.2s;
+}
+
+.starfish-switcher-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.starfish-switcher input:checked+.starfish-switcher-slider {
+  background-color: #2271b1;
+}
+
+.starfish-switcher input:checked+.starfish-switcher-slider:before {
+  transform: translateX(20px);
+}
+
+.starfish-switcher:hover .starfish-switcher-slider {
+  background-color: #787c82;
+}
+
+.starfish-switcher input:checked:hover+.starfish-switcher-slider {
+  background-color: #135e96;
+}
+
+/* ==================== 滑块 ==================== */
+.starfish-slider-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.starfish-slider {
+  flex: 1;
+  max-width: 300px;
+  margin-right: 15px;
+  height: 4px;
+  border-radius: 2px;
+  background: #c3c4c7;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.starfish-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2271b1;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fff;
+}
+
+.starfish-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2271b1;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fff;
+}
+
+.starfish-slider-value {
+  min-width: 50px;
+  text-align: center;
+  font-weight: 500;
+  color: #2c3338;
+  font-size: 14px;
+}
+
+/* ==================== 颜色选择器 ==================== */
+.starfish-color-picker-wrapper {
+  display: inline-block;
+}
+
+.starfish-color-picker {
+  width: 80px !important;
+}
+
+.wp-picker-container {
+  display: inline-block;
+}
+
+/* ==================== 上传字段 ==================== */
+.starfish-upload-wrapper,
+.starfish-image-wrapper,
+.starfish-gallery-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.starfish-upload-url,
+.starfish-image-url,
+.starfish-gallery-urls {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.starfish-upload-button,
+.starfish-image-button,
+.starfish-gallery-button,
+.starfish-remove-button {
+  margin-right: 0;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+@media screen and (min-width: 782px) {
+
+  .starfish-upload-url,
+  .starfish-image-url,
+  .starfish-gallery-urls {
+    margin-right: 0px;
+    margin-bottom: 0px;
+  }
+
+  .starfish-upload-button,
+  .starfish-image-button,
+  .starfish-gallery-button,
+  .starfish-remove-button {
+    width: 100px;
+    margin: 0 0px 0 10px !important;
+  }
+}
+
+/* ==================== 图片预览 ==================== */
+.starfish-image-preview {
+  margin: 0 0 15px 0;
+  padding: 10px;
+  border: 2px dashed #c3c4c7;
+  background: #f6f7f7;
+  min-height: 100px;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.starfish-image-preview img {
+  max-width: 150px;
+  height: auto;
+  display: block;
+}
+
+.starfish-image-preview:empty::before {
+  content: '暂无图片';
+  color: #646970;
+  font-style: italic;
+}
+
+/* ==================== 画廊 ==================== */
+.starfish-gallery-preview {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  margin-right: 0;
+  padding: 10px;
+  border: 2px dashed #c3c4c7;
+  background: #f6f7f7;
+  min-height: 100px;
+  min-width: 100px;
+}
+
+@media screen and (min-width: 782px) {
+  .starfish-gallery-preview {
+    margin-right: 0;
+  }
+}
+
+.starfish-gallery-item {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 1px solid #c3c4c7;
+  background: #fff;
+}
+
+.starfish-gallery-item img {
+  max-width: 100px;
+  height: auto;
+  display: block;
+}
+
+.starfish-gallery-preview:empty::before {
+  content: '暂无图片';
+  color: #646970;
+  font-style: italic;
+  width: 100%;
+  text-align: center;
+  padding: 30px 0;
+}
+
+/* ==================== 群组字段 ==================== */
+.starfish-group-wrapper {
+  border: 1px solid #c3c4c7;
+  padding: 0;
+  background: #fff;
+}
+
+.starfish-group-items {
+  margin-bottom: 0;
+}
+
+.starfish-group-item {
+  border: none;
+  border-bottom: 1px solid #c3c4c7;
+  margin-bottom: 0;
+  background: #fff;
+}
+
+.starfish-group-item:last-child {
+  border-bottom: none;
+}
+
+.starfish-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: #f6f7f7;
+  border-bottom: 1px solid #c3c4c7;
+}
+
+.starfish-group-title {
+  font-weight: 600;
+  color: #1d2327;
+  font-size: 14px;
+}
+
+.starfish-group-remove {
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #b32d2e;
+  height: 30px !important;
+  min-height: 30px !important;
+}
+
+.starfish-group-remove:hover {
+  color: #b32d2e;
+  border-color: #b32d2e;
+}
+
+.starfish-group-content {
+  padding: 15px;
+}
+
+.starfish-group-content .starfish-field {
+  margin-bottom: 15px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.starfish-group-content .starfish-field:last-child {
+  margin-bottom: 0;
+}
+
+.starfish-group-add-widget {
+  padding: 15px;
+}
+.starfish-group-add {
+  width: 100%;
+  padding: 12px;
+  border-top: 1px solid #c3c4c7;
+  border-radius: 0;
+}
+
+.starfish-sub-field {
+  margin: 10px 0;
+}
+
+.starfish-sub-field label {
+  margin: 0 10px 10px 0;
+}
+
+@media screen and (min-width:768px) {
+  .starfish-sub-field label {
+    margin: 0 10px 10px 0;
+  }
+}
+
+/* ==================== 排序器 ==================== */
+.starfish-sorter-wrapper {
+  border: 1px solid #c3c4c7;
+  padding: 0;
+  background: #fff;
+}
+
+.starfish-sorter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.starfish-sorter-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #f0f0f1;
+  background: #fff;
+  cursor: move;
+  transition: background 0.15s ease;
+}
+
+/* .starfish-sorter-item:last-child {
+    border-bottom: none;
+} */
+
+.starfish-sorter-item:hover {
+  background: #f6f7f7;
+}
+
+.starfish-sorter-item.ui-sortable-helper {
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.starfish-sorter-handle {
+  margin-right: 12px;
+  color: #8c8f94;
+  cursor: move;
+}
+
+.starfish-sorter-handle .dashicons {
+  font-size: 18px;
+}
+
+.starfish-sorter-label {
+  flex: 1;
+  font-size: 14px;
+  color: #2c3338;
+}
+
+/* ==================== 排序器（双列表拖拽）==================== */
+.starfish-sorter-dual-wrapper {
+  width: 100%;
+}
+
+.starfish-sorter-containers {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.starfish-sorter-container {
+  flex: 1;
+  border: 1px solid #c3c4c7;
+  background: #fff;
+  min-height: 200px;
+  width: 100%;
+  margin-right: 0;
+  margin-bottom: 20px;
+}
+
+.starfish-sorter-container:last-child {
+  margin-bottom: 0;
+}
+
+@media screen and (min-width: 782px) {
+  .starfish-sorter-containers {
+    flex-direction: row;
+  }
+
+  .starfish-sorter-container:first-child {
+    margin-right: 20px;
+    margin-bottom: 0;
+  }
+
+  .starfish-sorter-container:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.starfish-sorter-title {
+  margin: 0;
+  padding: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d2327;
+  background: #f6f7f7;
+  border-bottom: 1px solid #c3c4c7;
+}
+
+.starfish-sorter-list {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  min-height: 150px;
+}
+
+.starfish-sorter-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  border: 1px solid #c3c4c7;
+  background: #fff;
+  cursor: move;
+  transition: all 0.15s ease;
+  border-radius: 3px;
+}
+
+.starfish-sorter-item:last-child {
+  margin-bottom: 0;
+}
+
+.starfish-sorter-item:hover {
+  background: #f6f7f7;
+  border-color: #2271b1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.starfish-sorter-item.dragging {
+  opacity: 0.5;
+  background: #e0e0e0;
+}
+
+.starfish-sorter-item.drag-over {
+  border-top: 3px solid #2271b1;
+}
+
+.starfish-sorter-handle {
+  margin-right: 12px;
+  color: #8c8f94;
+  cursor: move;
+}
+
+.starfish-sorter-handle .dashicons {
+  font-size: 18px;
+}
+
+.starfish-sorter-label {
+  flex: 1;
+  font-size: 14px;
+  color: #2c3338;
+}
+
+/* 空列表提示 */
+.starfish-sorter-list:empty::before {
+  content: '拖拽模块到此处';
+  display: block;
+  text-align: center;
+  padding: 40px 20px;
+  color: #8c8f94;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* ==================== 备份字段 ==================== */
+.starfish-backup-wrapper {
+  position: relative;
+}
+
+.starfish-backup-wrapper h3 {
+  margin: 0 0 10px 0;
+  padding: 0;
+  font-size: 16px;
+  color: #1d2327;
+}
+
+.starfish-backup-sections {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.starfish-backup-section {
+  flex: 1;
+  padding: 20px;
+  margin: 0 0 15px 0;
+  border: 1px solid #c3c4c7;
+  background: #fff;
+  box-sizing: border-box;
+  width: 100%;
+  margin-right: 0;
+}
+
+.starfish-backup-section:last-child {
+  margin-bottom: 0;
+}
+
+@media screen and (min-width: 782px) {
+  .starfish-backup-sections {
+    flex-direction: row;
+  }
+
+  .starfish-backup-section {
+    position: relative;
+  }
+
+  .starfish-backup-section:last-child {
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+}
+
+.starfish-backup-section h4 {
+  margin: 0 0 10px 0;
+  padding: 0;
+  font-size: 14px;
+  color: #1d2327;
+}
+
+.starfish-backup-section p {
+  margin: 0 0 15px 0;
+  color: #646970;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.starfish-export-button,
+.starfish-import-button,
+.starfish-reset-button {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 15px !important;
+}
+
+.starfish-export-button .dashicons,
+.starfish-import-button .dashicons,
+.starfish-reset-button .dashicons{
+  margin-right: 5px;
+  margin-top: 4px;
+}
+
+.starfish-import-form {
+  margin-top: 15px;
+}
+
+.starfish-import-input {
+  display: block;
+  margin-top: 10px;
+  padding: 0;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ==================== 提交按钮区域 ==================== */
+.starfish-form .submit {
+  margin-top: 20px;
+  padding: 20px 0 0 0;
+  border-top: 1px solid #c3c4c7;
+}
+
+/* ==================== 覆盖 ==================== */
+.starfish-form .starfish-group-remove {
+  line-height: 1 !important;
+  padding: 0 4px;
+}
