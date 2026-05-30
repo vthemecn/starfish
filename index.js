@@ -489,6 +489,9 @@
                 
                 // 初始化新项中的特殊字段（上传、图片、画廊等）
                 initializeSpecialFieldsInItem(newItem, fieldId, newIndex);
+                
+                // 更新隐藏字段的值
+                updateGroupHiddenValue(wrapper);
             });
         });
         
@@ -497,6 +500,57 @@
         removeButtons.forEach(function(button) {
             bindGroupRemoveButton(button.closest('.starfish-group-item'));
         });
+        
+        // 初始化所有已存在的 Group 的隐藏字段值
+        var wrappers = document.querySelectorAll('.starfish-group-wrapper');
+        wrappers.forEach(function(wrapper) {
+            updateGroupHiddenValue(wrapper);
+        });
+    }
+    
+    /**
+     * 更新 Group 字段的隐藏 input 值
+     */
+    function updateGroupHiddenValue(wrapper) {
+        var hiddenInput = wrapper.querySelector('.starfish-group-hidden-value');
+        if (!hiddenInput) return;
+        
+        var fieldId = wrapper.getAttribute('data-field-id');
+        var items = wrapper.querySelectorAll('.starfish-group-item');
+        var values = [];
+        
+        // 遍历所有子项，收集数据
+        items.forEach(function(item) {
+            var itemData = {};
+            var inputs = item.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(function(input) {
+                // 跳过隐藏的值字段本身
+                if (input.classList.contains('starfish-group-hidden-value')) {
+                    return;
+                }
+                
+                // 从 name 属性中提取字段 ID
+                // name 格式: starfish_config[fieldId][index][subFieldId]
+                var name = input.getAttribute('name');
+                if (!name) return;
+                
+                // 提取 subFieldId
+                var matches = name.match(/\[([^\]]+)\]$/);
+                if (matches && matches[1]) {
+                    var subFieldId = matches[1];
+                    itemData[subFieldId] = input.value;
+                }
+            });
+            
+            // 只添加非空的对象
+            if (Object.keys(itemData).length > 0) {
+                values.push(itemData);
+            }
+        });
+        
+        // 更新隐藏字段的值为 JSON 字符串
+        hiddenInput.value = JSON.stringify(values);
     }
     
     /**
@@ -572,6 +626,9 @@
                 
                 // 更新剩余项的索引和标题
                 updateGroupIndicesAndTitles(wrapper);
+                
+                // 更新隐藏字段的值
+                updateGroupHiddenValue(wrapper);
             }
         });
     }

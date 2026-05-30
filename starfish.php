@@ -3,7 +3,7 @@
  * StarFish - WordPress 配置框架核心类
  * 
  * @package StarFish
- * @version 2.3.0
+ * @version 2.4.0
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn
  */
@@ -652,6 +652,13 @@ class StarFish {
         $attributes = $this->get_field_attributes($field);
         ?>
         <div class="starfish-group-wrapper" data-field-id="<?php echo esc_attr($id); ?>">
+            <!-- 隐藏字段存储 Group 的 JSON 值 -->
+            <input type="hidden" 
+                   name="<?php echo esc_attr($name); ?>" 
+                   id="<?php echo esc_attr($id . '_hidden_value'); ?>" 
+                   value="<?php echo esc_attr(json_encode($value)); ?>"
+                   class="starfish-group-hidden-value" />
+            
             <div class="starfish-group-items">
                 <?php if (!empty($value)): ?>
                     <?php foreach ($value as $index => $group_data): ?>
@@ -1178,6 +1185,16 @@ class StarFish {
                 }
                 return array();
             case 'group':
+                // 如果是 JSON 字符串，解码为数组
+                if (is_string($value) && !empty($value)) {
+                    $decoded = json_decode($value, true);
+                    if (is_array($decoded)) {
+                        $value = $decoded;
+                    } else {
+                        return array();
+                    }
+                }
+                
                 if (!is_array($value)) {
                     return array();
                 }
