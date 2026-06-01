@@ -364,7 +364,7 @@ add_action('init', function() use ($config) {
     /**
      * 这样在后台创建一个设置面板
      */
-    // StarFish::get_instance()->init($config);
+    StarFish::get_instance()->init($config);
 
 
     /**
@@ -411,11 +411,11 @@ add_action('init', function() use ($config) {
         )
     );
 
-    $one = new StarFish();
-    $one->init($config);
+    // $one = new StarFish();
+    // $one->init($config);
 
-    $one1 = new StarFish();
-    $one1->init($config1);
+    // $one1 = new StarFish();
+    // $one1->init($config1);
 
 
 
