@@ -169,35 +169,13 @@ class StarFish {
         // 从 screen ID 中提取当前页面 ID
         $current_page_id = '';
         
-        // 尝试多种方式提取页面 ID
-        if ($current_screen->id === 'toplevel_page_' . $menu_slug) {
-            // 第一个页面（顶级菜单）
-            $current_page_id = $first_page['id'];
-        } else {
-            // 方法1: 尝试标准格式 {menu_slug}_page_{page_id}
-            $prefix = $menu_slug . '_page_';
-            if (strpos($current_screen->id, $prefix) === 0) {
-                $current_page_id = substr($current_screen->id, strlen($prefix));
-            }
-            
-            // 方法2: 如果方法1失败，尝试从末尾提取 _page_ 后面的部分
-            if (empty($current_page_id)) {
-                $parts = explode('_page_', $current_screen->id);
-                if (count($parts) > 1) {
-                    $current_page_id = end($parts);
-                }
-            }
-            
-            // 方法3: 如果还是失败，尝试匹配所有已知的页面 ID
-            if (empty($current_page_id)) {
-                foreach ($this->config['pages'] as $page) {
-                    $page_slug = sanitize_title($page['id']);
-                    if (strpos($current_screen->id, $page_slug) !== false) {
-                        $current_page_id = $page['id'];
-                        break;
-                    }
-                }
-            }
+        // WordPress 的 screen ID 格式：
+        // - 顶级菜单: toplevel_page_{slug}
+        // - 子菜单: {parent_slug}_page_{slug}
+        // 统一使用 _page_ 分割并取最后一部分
+        $parts = explode('_page_', $current_screen->id);
+        if (count($parts) > 1) {
+            $current_page_id = end($parts);
         }
         
         // 查找当前页面对应的配置
@@ -214,16 +192,12 @@ class StarFish {
         }
         
         // 获取当前 tab 参数
-        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+        $current_tab = isset($_GET['tab']) ? sanitize_title(sanitize_text_field($_GET['tab'])) : '';
 
         // 查找当前页面的所有子页面（tabs）
         $child_pages = array();
         foreach ($this->config['pages'] as $page) {
             if (!empty($page['parent']) && $page['parent'] === $current_page['id']) {
-                // 如果子页面没有 id，使用 title 生成 slug 作为 id
-                // if (empty($page['id'])) {
-                //     $page['id'] = sanitize_title($page['title']);
-                // }
                 $child_pages[] = $page;
             }
         }
@@ -270,7 +244,7 @@ class StarFish {
                     <?php foreach ($child_pages as $child): ?>
                         <?php 
                         $child_tab_slug = sanitize_title($child['title']);
-                        $is_active = $current_tab === $child['title'];
+                        $is_active = $current_tab === $child_tab_slug;
                         ?>
                         <a href="<?php echo esc_url(add_query_arg(array('page' => sanitize_title($current_page['id']), 'tab' => $child_tab_slug), admin_url('admin.php'))); ?>" 
                            class="nav-tab <?php echo $is_active ? 'nav-tab-active' : ''; ?>">
