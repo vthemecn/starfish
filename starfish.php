@@ -1159,8 +1159,18 @@ class StarFish {
                 
                 $field_id = $field['id'];
                 
-                // 只处理当前提交的字段
-                if (isset($options[$field_id])) {
+                // 处理 checkbox 和 switcher 类型：未提交时设置为空字符串
+                if (in_array($field['type'], array('checkbox', 'switcher'))) {
+                    if (isset($options[$field_id])) {
+                        $value = $options[$field_id];
+                        $saved_options[$field_id] = $this->sanitize_field_value($field, $value);
+                    } else {
+                        // checkbox/switcher 未选中时，显式设置为空字符串
+                        $saved_options[$field_id] = '';
+                    }
+                }
+                // 其他字段类型：只处理提交的字段
+                elseif (isset($options[$field_id])) {
                     $value = $options[$field_id];
                     // 根据字段类型进行清理，直接保存到根级别
                     $saved_options[$field_id] = $this->sanitize_field_value($field, $value);
