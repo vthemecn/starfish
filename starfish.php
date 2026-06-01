@@ -1,9 +1,10 @@
 <?php
 /**
- * StarFish - WordPress 配置框架核心类
- * 
+ * StarFish - WordPress Configuration Framework Core Class
+ * License: GPL v2 or later
+ * Text Domain: starfish
  * @package StarFish
- * @version 2.4.0
+ * @version 2.5.0
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn
  */
@@ -36,6 +37,7 @@ class StarFish {
         $this->config = $config;
         $this->load_options();
         $this->register_hooks();
+        $this->load_textdomain();
         
         // 如果数据库中没有该 option_name 的记录，创建默认值
         $this->maybe_create_default_options();
@@ -99,6 +101,20 @@ class StarFish {
         // 注册 AJAX 处理函数
         add_action('wp_ajax_starfish_import_settings', array($this, 'ajax_import_settings'));
         add_action('wp_ajax_starfish_reset_settings', array($this, 'ajax_reset_settings'));
+    }
+    
+    /**
+     * 加载翻译文本域
+     */
+    private function load_textdomain() {
+        // 指定路径加载
+        $mo_file = WP_PLUGIN_DIR . '/starfish/languages/zh_CN.mo';
+        if (file_exists($mo_file)) {
+            load_textdomain('starfish', $mo_file);
+        }
+
+        // 按照 {文本域}-{语言代码}.mo 加载 starfish-zh_CN.mo
+        // load_plugin_textdomain('starfish', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
     
     /**
@@ -181,7 +197,7 @@ class StarFish {
         // 查找当前页面对应的配置
         $current_page = null;
         foreach ($this->config['pages'] as $page) {
-            if ($page['id'] === $current_page_id || sanitize_title($page['id']) === $current_page_id) {
+            if (isset($page['id']) && ($page['id'] === $current_page_id || sanitize_title($page['id']) === $current_page_id)) {
                 $current_page = $page;
                 break;
             }
@@ -265,13 +281,16 @@ class StarFish {
                     <table class="form-table starfish-form-table" role="presentation">
                         <tbody>
                         <?php foreach ($display_page['fields'] as $field): ?>
-                            <?php $this->render_field($field, $option_name, $display_page['id']); ?>
+                            <?php 
+                            $page_id_for_render = isset($display_page['id']) ? $display_page['id'] : '';
+                            $this->render_field($field, $option_name, $page_id_for_render); 
+                            ?>
                         <?php endforeach; ?>
                         </tbody>
                     </table>
                 <?php endif; ?>
                 
-                <?php submit_button(__('保存设置', 'starfish')); ?>
+                <?php submit_button(__('Save Settings', 'starfish')); ?>
             </form>
         </div>
         <?php
@@ -583,7 +602,7 @@ class StarFish {
      * 上传字段
      */
     private function render_upload_field($field, $name, $id, $value) {
-        $button_text = isset($field['button_text']) ? $field['button_text'] : __('选择文件', 'starfish');
+        $button_text = isset($field['button_text']) ? $field['button_text'] : __('Select File', 'starfish');
         $attributes = $this->get_field_attributes($field);
         ?>
         <div class="starfish-upload-wrapper">
@@ -599,7 +618,7 @@ class StarFish {
             </button>
             <?php if (!empty($value)): ?>
                 <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($id); ?>">
-                    <?php _e('移除', 'starfish'); ?>
+                    <?php _e('Remove', 'starfish'); ?>
                 </button>
             <?php endif; ?>
         </div>
@@ -610,7 +629,7 @@ class StarFish {
      * 图片选择字段
      */
     private function render_image_field($field, $name, $id, $value) {
-        $button_text = isset($field['button_text']) ? $field['button_text'] : __('选择图片', 'starfish');
+        $button_text = isset($field['button_text']) ? $field['button_text'] : __('Select Image', 'starfish');
         $preview_size = isset($field['preview_size']) ? $field['preview_size'] : 'thumbnail';
         $attributes = $this->get_field_attributes($field);
         ?>
@@ -638,7 +657,7 @@ class StarFish {
             </button>
             <?php if (!empty($value)): ?>
                 <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($id); ?>">
-                    <?php _e('移除', 'starfish'); ?>
+                    <?php _e('Remove', 'starfish'); ?>
                 </button>
             <?php endif; ?>
         </div>
@@ -649,7 +668,7 @@ class StarFish {
      * 画廊字段
      */
     private function render_gallery_field($field, $name, $id, $value) {
-        $button_text = isset($field['button_text']) ? $field['button_text'] : __('管理画廊', 'starfish');
+        $button_text = isset($field['button_text']) ? $field['button_text'] : 'Manage Gallery';
         
         // 处理 value：确保是数组格式
         if (is_string($value) && !empty($value)) {
@@ -690,7 +709,7 @@ class StarFish {
      */
     private function render_group_field($field, $name, $id, $value, $page_id) {
         $fields = isset($field['fields']) ? $field['fields'] : array();
-        $button_title = isset($field['button_title']) ? $field['button_title'] : __('添加新项', 'starfish');
+        $button_title = isset($field['button_title']) ? $field['button_title'] : __('Add New Item', 'starfish');
         $value = is_array($value) ? $value : array();
         $attributes = $this->get_field_attributes($field);
         ?>
@@ -707,8 +726,8 @@ class StarFish {
                     <?php foreach ($value as $index => $group_data): ?>
                         <div class="starfish-group-item" data-index="<?php echo esc_attr($index); ?>">
                             <div class="starfish-group-header">
-                                <span class="starfish-group-title"><?php printf(__('项目 #%d', 'starfish'), $index + 1); ?></span>
-                                <button type="button" class="button starfish-group-remove" title="<?php _e('删除', 'starfish'); ?>">
+                                <span class="starfish-group-title"><?php printf(__('Item #%d', 'starfish'), $index + 1); ?></span>
+                                <button type="button" class="button starfish-group-remove" title="<?php _e('Delete', 'starfish'); ?>">
                                     <span class="dashicons dashicons-no"></span>
                                 </button>
                             </div>
@@ -782,11 +801,11 @@ class StarFish {
                                                        value="<?php echo esc_attr($sub_value); ?>"
                                                        class="starfish-image-url">
                                                 <button type="button" class="button starfish-image-button" data-field-id="<?php echo esc_attr($id . '_' . $index); ?>">
-                                                    <?php echo isset($sub_field['button_text']) ? esc_html($sub_field['button_text']) : __('选择', 'starfish'); ?>
+                                                    <?php echo isset($sub_field['button_text']) ? esc_html($sub_field['button_text']) : __('Select', 'starfish'); ?>
                                                 </button>
                                                 <?php if (!empty($sub_value)): ?>
                                                     <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($id . '_' . $index); ?>">
-                                                        <?php _e('移除', 'starfish'); ?>
+                                                        <?php _e('Remove', 'starfish'); ?>
                                                     </button>
                                                 <?php endif; ?>
                                                 <?php if (!empty($sub_field['desc'])): ?>
@@ -829,8 +848,8 @@ class StarFish {
             <script type="text/template" class="starfish-group-template" data-field-id="<?php echo esc_attr($id); ?>">
                 <div class="starfish-group-item" data-index="__INDEX__">
                     <div class="starfish-group-header">
-                        <span class="starfish-group-title"><?php _e('新项目', 'starfish'); ?></span>
-                        <button type="button" class="button starfish-group-remove" title="<?php _e('删除', 'starfish'); ?>">
+                        <span class="starfish-group-title"><?php _e('New Item', 'starfish'); ?></span>
+                        <button type="button" class="button starfish-group-remove" title="<?php _e('Delete', 'starfish'); ?>">
                             <span class="dashicons dashicons-no"></span>
                         </button>
                     </div>
@@ -894,7 +913,7 @@ class StarFish {
                                                value=""
                                                class="starfish-image-url">
                                         <button type="button" class="button starfish-image-button" data-field-id="<?php echo esc_attr($id); ?>_INDEX_<?php echo esc_attr($sub_field['id']); ?>">
-                                            <?php echo isset($sub_field['button_text']) ? esc_html($sub_field['button_text']) : __('选择', 'starfish'); ?>
+                                            <?php echo isset($sub_field['button_text']) ? esc_html($sub_field['button_text']) : 'Select'; ?>
                                         </button>
                                         <?php if (!empty($sub_field['desc'])): ?>
                                             <p class="description"><?php echo esc_html($sub_field['desc']); ?></p>
@@ -934,8 +953,8 @@ class StarFish {
      */
     private function render_sorter_field($field, $name, $id, $value) {
         $options = isset($field['options']) ? $field['options'] : array();
-        $enabled_title = isset($field['enabled_title']) ? $field['enabled_title'] : __('已启用模块', 'starfish');
-        $disabled_title = isset($field['disabled_title']) ? $field['disabled_title'] : __('已禁用模块', 'starfish');
+        $enabled_title = isset($field['enabled_title']) ? $field['enabled_title'] : __('Enabled Modules', 'starfish');
+        $disabled_title = isset($field['disabled_title']) ? $field['disabled_title'] : __('Disabled Modules', 'starfish');
         
         // 处理 value：如果是 JSON 字符串则解码，否则直接使用
         if (is_string($value) && !empty($value)) {
@@ -1007,8 +1026,8 @@ class StarFish {
      * 备份字段
      */
     private function render_backup_field($field, $option_name, $page_id) {
-        $title = isset($field['title']) ? $field['title'] : __('数据备份与还原', 'starfish');
-        $desc = isset($field['desc']) ? $field['desc'] : __('您可以导出当前设置为JSON文件进行备份，或从备份文件还原设置', 'starfish');
+        $title = isset($field['title']) ? $field['title'] : __('Data Backup & Restore', 'starfish');
+        $desc = isset($field['desc']) ? $field['desc'] : __('You can export the current settings as a JSON file for backup, or restore settings from a backup file.', 'starfish');
         
         // 获取全局选项名称并读取所有数据（扁平结构）
         $global_option_name = $this->get_global_option_name();
@@ -1016,14 +1035,15 @@ class StarFish {
         
         $backup_data = json_encode($all_options, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         ?>
+
         <div class="starfish-backup-wrapper">
             <!-- 导出部分 -->
             <div class="starfish-backup-section starfish-backup-export">
-                <h4><?php _e('导出数据', 'starfish'); ?></h4>
-                <p><?php _e('将当前所有设置导出为JSON文件，方便备份和迁移。', 'starfish'); ?></p>
+                <h4><?php _e('Export Data', 'starfish'); ?></h4>
+                <p><?php _e('Export all current settings as a JSON file for backup and migration.', 'starfish'); ?></p>
                 <button type="button" class="button button-primary starfish-export-button" id="starfish-export-btn">
                     <span class="dashicons dashicons-download"></span>
-                    <?php _e('导出设置', 'starfish'); ?>
+                    <?php _e('Export Settings', 'starfish'); ?>
                 </button>
                 
                 <!-- 隐藏的数据域 -->
@@ -1032,8 +1052,8 @@ class StarFish {
             
             <!-- 导入部分 -->
             <div class="starfish-backup-section starfish-backup-import">
-                <h4><?php _e('导入数据', 'starfish'); ?></h4>
-                <p><?php _e('从之前导出的JSON文件还原设置。注意：这将覆盖当前所有设置！', 'starfish'); ?></p>
+                <h4><?php _e('Import Data', 'starfish'); ?></h4>
+                <p><?php _e('Restore settings from a previously exported JSON file. Note: This will overwrite all current settings!', 'starfish'); ?></p>
                 
                 <div class="starfish-import-form">
                     <input type="file" 
@@ -1046,7 +1066,7 @@ class StarFish {
                             class="button button-secondary starfish-import-button" 
                             id="starfish-import-btn">
                         <span class="dashicons dashicons-upload"></span>
-                        <?php _e('导入设置', 'starfish'); ?>
+                        <?php _e('Import Settings', 'starfish'); ?>
                     </button>
                     
                     <button type="button" 
@@ -1054,7 +1074,7 @@ class StarFish {
                             id="starfish-reset-btn"
                             style="margin-left: 10px;">
                         <span class="dashicons dashicons-undo"></span>
-                        <?php _e('重置设置', 'starfish'); ?>
+                        <?php _e('Reset Settings', 'starfish'); ?>
                     </button>
                 </div>
             </div>
@@ -1297,8 +1317,11 @@ class StarFish {
             $valid_pages[] = 'toplevel_page_' . $menu_slug;
             
             foreach ($this->config['pages'] as $page) {
-                $page_slug = sanitize_title($page['id']);
-                $valid_pages[] = $menu_slug . '_page_' . $page_slug;
+                // 只处理有 id 字段的页面（跳过有 parent 的子页面）
+                if (isset($page['id']) && !isset($page['parent'])) {
+                    $page_slug = sanitize_title($page['id']);
+                    $valid_pages[] = $menu_slug . '_page_' . $page_slug;
+                }
             }
         }
         
@@ -1326,10 +1349,13 @@ class StarFish {
                 // 额外检查：遍历所有页面 ID，看是否匹配
                 if (!$is_valid_page) {
                     foreach ($this->config['pages'] as $page) {
-                        $page_slug = sanitize_title($page['id']);
-                        if (strpos($screen->id, $page_slug) !== false) {
-                            $is_valid_page = true;
-                            break;
+                        // 只处理有 id 字段的页面
+                        if (isset($page['id']) && !empty($page['id'])) {
+                            $page_slug = sanitize_title($page['id']);
+                            if (!empty($page_slug) && strpos($screen->id, $page_slug) !== false) {
+                                $is_valid_page = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -1362,18 +1388,18 @@ class StarFish {
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('starfish_nonce'),
             'strings' => array(
-                'remove' => __('移除', 'starfish'),
-                'add' => __('添加', 'starfish'),
-                'confirmDelete' => __('确定要删除吗？', 'starfish'),
-                'confirmImport' => __('确定要导入设置吗？这将覆盖当前的配置。', 'starfish'),
-                'confirmReset' => __('确定要重置为默认设置吗？这将清除所有自定义配置！', 'starfish'),
-                'selectFileFirst' => __('请先选择一个JSON文件', 'starfish'),
-                'selectFile' => __('选择文件', 'starfish'),
-                'useThisFile' => __('使用此文件', 'starfish'),
-                'selectImage' => __('选择图片', 'starfish'),
-                'useThisImage' => __('使用此图片', 'starfish'),
-                'manageGallery' => __('管理画廊', 'starfish'),
-                'addToGallery' => __('添加到画廊', 'starfish'),
+                'remove' => __('Remove', 'starfish'),
+                'add' => __('Add', 'starfish'),
+                'confirmDelete' => __('Are you sure you want to delete?', 'starfish'),
+                'confirmImport' => __('Are you sure you want to import settings? This will overwrite the current configuration.', 'starfish'),
+                'confirmReset' => __('Are you sure you want to reset to default settings? This will clear all custom configurations!', 'starfish'),
+                'selectFileFirst' => __('Please select a JSON file first', 'starfish'),
+                'selectFile' => __('Select File', 'starfish'),
+                'useThisFile' => __('Use This File', 'starfish'),
+                'selectImage' => __('Select Image', 'starfish'),
+                'useThisImage' => __('Use This Image', 'starfish'),
+                'manageGallery' => __('Manage Gallery', 'starfish'),
+                'addToGallery' => __('Add to Gallery', 'starfish'),
             )
         ));
         
@@ -1456,7 +1482,7 @@ class StarFish {
         // 验证 nonce
         if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'starfish_nonce')) {
             wp_send_json_error(array(
-                'message' => __('安全验证失败', 'starfish')
+                'message' => __('Security verification failed', 'starfish')
             ));
             return;
         }
@@ -1464,7 +1490,7 @@ class StarFish {
         // 检查权限
         if (!current_user_can('manage_options')) {
             wp_send_json_error(array(
-                'message' => __('没有权限执行此操作', 'starfish')
+                'message' => __('You do not have permission to perform this action', 'starfish')
             ));
             return;
         }
@@ -1472,7 +1498,7 @@ class StarFish {
         // 检查文件是否上传
         if (!isset($_FILES['starfish_import_file']) || $_FILES['starfish_import_file']['error'] !== UPLOAD_ERR_OK) {
             wp_send_json_error(array(
-                'message' => __('上传文件失败，请重试。', 'starfish')
+                'message' => __('File upload failed, please try again.', 'starfish')
             ));
             return;
         }
@@ -1482,7 +1508,7 @@ class StarFish {
         // 验证文件类型
         if (pathinfo($file['name'], PATHINFO_EXTENSION) !== 'json') {
             wp_send_json_error(array(
-                'message' => __('只支持JSON格式的备份文件。', 'starfish')
+                'message' => __('Only JSON format backup files are supported.', 'starfish')
             ));
             return;
         }
@@ -1493,7 +1519,7 @@ class StarFish {
         
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
             wp_send_json_error(array(
-                'message' => __('JSON文件格式错误，无法解析。', 'starfish')
+                'message' => __('JSON file format error, unable to parse.', 'starfish')
             ));
             return;
         }
@@ -1508,7 +1534,7 @@ class StarFish {
         $this->options = $data;
         
         wp_send_json_success(array(
-            'message' => __('成功导入设置！', 'starfish')
+            'message' => __('Settings imported successfully!', 'starfish')
         ));
     }
     
@@ -1519,7 +1545,7 @@ class StarFish {
         // 验证 nonce
         if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'starfish_nonce')) {
             wp_send_json_error(array(
-                'message' => __('安全验证失败', 'starfish')
+                'message' => __('Security verification failed', 'starfish')
             ));
             return;
         }
@@ -1527,7 +1553,7 @@ class StarFish {
         // 检查权限
         if (!current_user_can('manage_options')) {
             wp_send_json_error(array(
-                'message' => __('没有权限执行此操作', 'starfish')
+                'message' => __('You do not have permission to perform this action', 'starfish')
             ));
             return;
         }
@@ -1536,7 +1562,7 @@ class StarFish {
         $this->reset_to_defaults();
         
         wp_send_json_success(array(
-            'message' => __('已成功重置为默认设置！', 'starfish')
+            'message' => __('Successfully reset to default settings!', 'starfish')
         ));
     }
 

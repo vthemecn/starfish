@@ -1,0 +1,19 @@
+{
+  "name": "starfish",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "i18n": "msgfmt -o languages/zh_CN.mo languages/zh_CN.po"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vthemecn/starfish"
+  },
+  "author": "vtheme",
+  "license": "ISC"
+}
+
+
+
+

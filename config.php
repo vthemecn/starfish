@@ -294,7 +294,7 @@ $config = array(
         ),
 
         array(
-            'id' => 'page_aa',
+            'id' => 'page_test',
             'title' => '子页面设置',
             'icon' => 'dashicons-performance',
             'fields' => array(
@@ -311,10 +311,8 @@ $config = array(
             )
         ),
         array(
-            'parent' => 'page_aa',
-            'id' => 'advanced_page_1',
+            'parent' => 'page_test',
             'title' => '子页面设置1',
-            'icon' => 'dashicons-performance',
             'fields' => array(
                 array(
                     'id' => 'advanced_page_11',
@@ -329,10 +327,8 @@ $config = array(
             )
         ),
         array(
-            'parent' => 'page_aa',
-            'id' => 'advanced_page_2',
+            'parent' => 'page_test',
             'title' => '子页面设置2',
-            'icon' => 'dashicons-performance',
             'fields' => array(
                 array(
                     'id' => 'advanced_page_21',
@@ -365,6 +361,63 @@ $config = array(
 
 // 初始化 StarFish
 add_action('init', function() use ($config) {
-    StarFish::get_instance()->init($config);
+    /**
+     * 这样在后台创建一个设置面板
+     */
+    // StarFish::get_instance()->init($config);
+
+
+    /**
+     * 创建两个设置面板
+     * 暂时无法用上面的静态方法创建多个设置面板，需要实力话对象。
+     * 注意，多个页面的 ID 不可相同
+     */
+    $config1 = array(
+        'menu_title' => 'StarFish 设置2',
+        'menu_icon' => 'dashicons-admin-generic',
+        'menu_position' => 20,
+        'option_name' => 'starfish_config_1',
+        'pages' => array(
+            array(
+                'id' => 'general_page1',
+                'title' => '常规设置1',
+                'icon' => 'dashicons-admin-generic',
+                'fields' => array(
+                    array(
+                        'id' => 'site_title',
+                        'type' => 'text',
+                        'title' => '网站标题',
+                        'desc' => '请输入您的网站标题',
+                        'default' => '我的网站',
+                        'placeholder' => '输入网站标题',
+                    ),
+                )
+            ),
+            array(
+                'id' => 'general_page2',
+                'title' => '常规设置2',
+                'icon' => 'dashicons-admin-generic',
+                'fields' => array(
+                    array(
+                        'id' => 'site_title_000',
+                        'type' => 'text',
+                        'title' => '网站标题',
+                        'desc' => '请输入您的网站标题',
+                        'default' => '我的网站',
+                        'placeholder' => '输入网站标题',
+                    ),
+                )
+            ),
+        )
+    );
+
+    $one = new StarFish();
+    $one->init($config);
+
+    $one1 = new StarFish();
+    $one1->init($config1);
+
+
+
 });
 

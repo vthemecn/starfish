@@ -1,0 +1,124 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: StarFish 1.0.0\n"
+"PO-Revision-Date: 2026-06-01 16:32:45+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Manual\n"
+"Language: zh_CN\n"
+"X-Domain: starfish\n"
+
+#: starfish.php:273
+msgid "Save Settings"
+msgstr "保存设置"
+
+#: starfish.php:585
+msgid "Select File"
+msgstr "选择文件"
+
+#: starfish.php:612
+msgid "Select Image"
+msgstr "选择图片"
+
+#: starfish.php:651
+msgid "Manage Gallery"
+msgstr "管理画廊"
+
+#: starfish.php:692
+msgid "Add New Item"
+msgstr "添加新项"
+
+#: starfish.php:709
+msgid "Item #%d"
+msgstr "项目 #%d"
+
+#: starfish.php:710
+msgid "Delete"
+msgstr "删除"
+
+#: starfish.php:784,896
+msgid "Select"
+msgstr "选择"
+
+#: starfish.php:936
+msgid "Enabled Modules"
+msgstr "已启用模块"
+
+#: starfish.php:937
+msgid "Disabled Modules"
+msgstr "已禁用模块"
+
+#: starfish.php:1009
+msgid "Data Backup & Restore"
+msgstr "数据备份与还原"
+
+#: starfish.php:1010
+msgid "You can export the current settings as a JSON file for backup, or restore settings from a backup file."
+msgstr "您可以导出当前设置为JSON文件进行备份，或从备份文件还原设置"
+
+#: starfish.php:1364
+msgid "Remove"
+msgstr "移除"
+
+#: starfish.php:1365
+msgid "Add"
+msgstr "添加"
+
+#: starfish.php:1366
+msgid "Are you sure you want to delete?"
+msgstr "确定要删除吗？"
+
+#: starfish.php:1367
+msgid "Are you sure you want to import settings? This will overwrite the current configuration."
+msgstr "确定要导入设置吗？这将覆盖当前的配置。"
+
+#: starfish.php:1368
+msgid "Are you sure you want to reset to default settings? This will clear all custom configurations!"
+msgstr "确定要重置为默认设置吗？这将清除所有自定义配置！"
+
+#: starfish.php:1369
+msgid "Please select a JSON file first"
+msgstr "请先选择一个JSON文件"
+
+#: starfish.php:1371
+msgid "Use This File"
+msgstr "使用此文件"
+
+#: starfish.php:1373
+msgid "Use This Image"
+msgstr "使用此图片"
+
+#: starfish.php:1375
+msgid "Add to Gallery"
+msgstr "添加到画廊"
+
+#: starfish.php:1458,1521
+msgid "Security verification failed"
+msgstr "安全验证失败"
+
+#: starfish.php:1466,1529
+msgid "You do not have permission to perform this action"
+msgstr "没有权限执行此操作"
+
+msgid "Export Data"
+msgstr "导出数据"
+
+msgid "Export all current settings as a JSON file for backup and migration."
+msgstr "将所有当前设置导出为 JSON 文件，以便备份和迁移。"
+
+msgid "Export Settings"
+msgstr "导出设置"
+
+msgid "Import Data"
+msgstr "导入数据"
+
+msgid "Restore settings from a previously exported JSON file. Note: This will overwrite all current settings!"
+msgstr "从之前导出的 JSON 文件中恢复设置。注意：这将覆盖所有当前设置！"
+
+msgid "Import Settings"
+msgstr "导入设置"
+
+msgid "Reset Settings"
+msgstr "重置设置"

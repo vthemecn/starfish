@@ -3,7 +3,6 @@
  * Plugin Name: StarFish
  * Plugin URI: https://vtheme.cn/starfish
  * Description: 一个轻量级的 WordPress 配置框架
- * Version: 2.3.0
  * Author: VTHEME
  * Author URI: https://vtheme.cn
  * License: GPL v2 or later
@@ -18,6 +17,19 @@ if (!defined('ABSPATH')) {
 define('VCONFIG_VERSION', '1.0.0');
 define('VCONFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VCONFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+/**
+ * 加载翻译文本域
+ */
+function starfish_load_textdomain() {
+    $mo_file = WP_PLUGIN_DIR . '/starfish/languages/zh_CN.mo';
+    
+    // 直接加载 MO 文件
+    if (file_exists($mo_file)) {
+        load_textdomain('starfish', $mo_file);
+    }
+}
+// add_action('plugins_loaded', 'starfish_load_textdomain');
 
 /**
  * 加载配置文件
