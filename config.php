@@ -292,6 +292,61 @@ $config = array(
 
             ),
         ),
+
+        array(
+            'id' => 'page_aa',
+            'title' => '子页面设置',
+            'icon' => 'dashicons-performance',
+            'fields' => array(
+                array(
+                    'id' => 'site_title1',
+                    'type' => 'text',
+                    'title' => '标题1',
+                ),
+                array(
+                    'id' => 'site_title2',
+                    'type' => 'text',
+                    'title' => '标题1',
+                ),
+            )
+        ),
+        array(
+            'parent' => 'page_aa',
+            'id' => 'advanced_page_1',
+            'title' => '子页面设置1',
+            'icon' => 'dashicons-performance',
+            'fields' => array(
+                array(
+                    'id' => 'advanced_page_11',
+                    'type' => 'text',
+                    'title' => '测试a1',
+                ),
+                array(
+                    'id' => 'advanced_page_12',
+                    'type' => 'text',
+                    'title' => '测试a2',
+                ),
+            )
+        ),
+        array(
+            'parent' => 'page_aa',
+            'id' => 'advanced_page_2',
+            'title' => '子页面设置2',
+            'icon' => 'dashicons-performance',
+            'fields' => array(
+                array(
+                    'id' => 'advanced_page_21',
+                    'type' => 'text',
+                    'title' => '测试b1',
+                ),
+                array(
+                    'id' => 'advanced_page_22',
+                    'type' => 'text',
+                    'title' => '测试b2',
+                ),
+            )
+        ),
+
         array(
             'id' => 'backup_page',
             'title' => '备份与还原',

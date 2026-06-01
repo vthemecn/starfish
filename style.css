@@ -13,6 +13,31 @@
  * 采用移动优先（Mobile First）策略
  */
 
+/* ==================== 选项卡样式 ==================== */
+.starfish-tab-wrapper {
+  margin: 20px 0 0 0;
+}
+
+.starfish-tab-wrapper .nav-tab {
+  margin-left: 0;
+  margin-right: 8px;
+  margin-bottom: -1px;
+}
+
+@media screen and (max-width: 782px) {
+  .starfish-tab-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .starfish-tab-wrapper .nav-tab {
+    flex: 1 1 auto;
+    text-align: center;
+    margin-bottom: 5px;
+    min-width: 100px;
+  }
+}
+
 /* ==================== 基础布局（移动端默认）==================== */
 .starfish-wrapper {
   max-width: 100%;
@@ -790,3 +815,5 @@
   line-height: 1 !important;
   padding: 0 4px;
 }
+
+

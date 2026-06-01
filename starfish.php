@@ -134,10 +134,16 @@ class StarFish {
             array($this, 'render_admin_page')
         );
         
-        // 从第二个页面开始添加子菜单
+        // 从第二个页面开始添加子菜单（跳过有 parent 的子页面）
         $pages = array_values($this->config['pages']);
         for ($i = 1; $i < count($pages); $i++) {
             $page = $pages[$i];
+            
+            // 如果有 parent 字段，说明是子页面（tab），不创建独立菜单
+            if (!empty($page['parent'])) {
+                continue;
+            }
+            
             $page_slug = sanitize_title($page['id']);
             add_submenu_page(
                 $menu_slug,
@@ -207,22 +213,85 @@ class StarFish {
             $current_page = reset($this->config['pages']);
         }
         
+        // 获取当前 tab 参数
+        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+
+        // 查找当前页面的所有子页面（tabs）
+        $child_pages = array();
+        foreach ($this->config['pages'] as $page) {
+            if (!empty($page['parent']) && $page['parent'] === $current_page['id']) {
+                // 如果子页面没有 id，使用 title 生成 slug 作为 id
+                // if (empty($page['id'])) {
+                //     $page['id'] = sanitize_title($page['title']);
+                // }
+                $child_pages[] = $page;
+            }
+        }
+        
+        // 确定实际要显示的页面
+        $display_page = $current_page;
+ 
+        // 如果有 tab 参数且对应子页面存在，显示子页面
+        if (!empty($current_tab)) {
+            foreach ($child_pages as $child) {
+                if (sanitize_title($child['title']) === $current_tab) {
+                    $display_page = $child;
+                    break;
+                }
+            }
+        }
+        // 如果父页面没有 fields 但有子页面，自动显示第一个子页面
+        elseif (empty($current_page['fields']) && !empty($child_pages)) {
+            $display_page = $child_pages[0];
+            $current_tab = sanitize_title($display_page['title']);
+        }
+
         // 使用全局选项名称
         $option_name = $this->get_global_option_name();
         ?>
         <div class="wrap starfish-wrapper">
-            <h1><?php echo esc_html($current_page['title']); ?></h1>
+            <h1><?php echo esc_html($display_page['title']); ?></h1>
+
+            <?php 
+            // 如果有子页面，渲染选项卡
+            if (!empty($child_pages)): 
+            ?>
+                <h2 class="nav-tab-wrapper starfish-tab-wrapper">
+                    <?php 
+                    // 如果没有 tab 参数且父页面有 fields，父页面作为第一个 tab
+                    if (!empty($current_page['fields'])): 
+                    ?>
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=' . sanitize_title($current_page['id']))); ?>" 
+                           class="nav-tab <?php echo empty($current_tab) ? 'nav-tab-active' : ''; ?>">
+                            <?php echo esc_html($current_page['title']); ?>
+                        </a>
+                    <?php endif; ?>
+                    
+                    <?php foreach ($child_pages as $child): ?>
+                        <?php 
+                        $child_tab_slug = sanitize_title($child['title']);
+                        $is_active = $current_tab === $child['title'];
+                        ?>
+                        <a href="<?php echo esc_url(add_query_arg(array('page' => sanitize_title($current_page['id']), 'tab' => $child_tab_slug), admin_url('admin.php'))); ?>" 
+                           class="nav-tab <?php echo $is_active ? 'nav-tab-active' : ''; ?>">
+                            <?php echo esc_html($child['title']); ?>
+                        </a>
+                    <?php endforeach; ?>
+
+                </h2>
+            <?php endif; ?>
+
             
             <?php settings_errors($option_name); ?>
             
             <form method="post" action="options.php" class="starfish-form">
                 <?php settings_fields($option_name); ?>
                 
-                <?php if (!empty($current_page['fields'])): ?>
+                <?php if (!empty($display_page['fields'])): ?>
                     <table class="form-table starfish-form-table" role="presentation">
                         <tbody>
-                        <?php foreach ($current_page['fields'] as $field): ?>
-                            <?php $this->render_field($field, $option_name, $current_page['id']); ?>
+                        <?php foreach ($display_page['fields'] as $field): ?>
+                            <?php $this->render_field($field, $option_name, $display_page['id']); ?>
                         <?php endforeach; ?>
                         </tbody>
                     </table>
