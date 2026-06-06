@@ -79,6 +79,7 @@ $config = array(
     )
 );
 ```
+菜单图标所使用的类，在 https://developer.wordpress.org/resource/dashicons 选择。
 
 ### 获取选项值
 
@@ -141,6 +142,14 @@ array(
     'default' => 'default',
     'multiple' => false, // 是否多选
 )
+```
+额外属性 query_args:
+```php
+'query_args' => 'pages', // 获取所有页面
+'query_args' => 'posts', // 获取所有文章
+'query_args' => 'categories', // 获取所有分类
+'query_args' => array('taxonomy' => 'post_tag'), // 获取标签
+'query_args' => array('taxonomy' => 'custom_taxonomy') // 获取自定义分类法 
 ```
 
 #### 单选框 (radio)

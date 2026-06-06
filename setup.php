@@ -18,15 +18,14 @@ require_once plugin_dir_path(__FILE__) . 'starfish.php';
  * 配置数组定义
  */
 $config = array(
-    'menu_title' => 'StarFish 设置',
-    'menu_icon' => 'dashicons-admin-generic',
+    'menu_title' => 'StarFish 演示',
+    'menu_icon' => 'dashicons-star-filled',
     'menu_position' => 20,
     'option_name' => 'starfish_config',
     'pages' => array(
         array(
             'id' => 'general_page',
             'title' => '常规设置',
-            'icon' => 'dashicons-admin-generic',
             'fields' => array(
                 array(
                     'id' => 'site_title',
@@ -66,6 +65,16 @@ $config = array(
                         'fluid' => '流式布局',
                     ),
                     'default' => 'default',
+                ),
+                array(
+                    'id' => 'my_category',
+                    'type' => 'select',
+                    'title' => '分类选择',
+                    'desc' => '可以多选',
+                    'options' => array(),
+                    'default' => 'default',
+                    'multiple' => true,
+                    'query_args' => 'categories'
                 ),
                 array(
                     'id' => 'show_sidebar',
@@ -244,7 +253,6 @@ $config = array(
         array(
             'id' => 'advanced_page',
             'title' => '高级设置',
-            'icon' => 'dashicons-performance',
             'fields' => array(
                 // 性能设置字段
                 array(
@@ -292,11 +300,9 @@ $config = array(
 
             ),
         ),
-
         array(
             'id' => 'page_test',
             'title' => '子页面设置',
-            'icon' => 'dashicons-performance',
             'fields' => array(
                 array(
                     'id' => 'site_title1',
@@ -342,11 +348,9 @@ $config = array(
                 ),
             )
         ),
-
         array(
             'id' => 'backup_page',
             'title' => '备份与还原',
-            'icon' => 'dashicons-backup',
             'fields' => array(
                 array(
                     'id' => 'backup_section',
@@ -362,62 +366,59 @@ $config = array(
 // 初始化 StarFish
 add_action('init', function() use ($config) {
     /**
-     * 这样在后台创建一个设置面板
+     * 1. 添加设置面板
      */
-    StarFish::get_instance()->init($config);
+    $starFish = new StarFish();
+    $starFish->init($config);
 
 
     /**
-     * 创建两个设置面板
-     * 暂时无法用上面的静态方法创建多个设置面板，需要实力话对象。
-     * 注意，多个页面的 ID 不可相同
+     * 2. 添加另外的设置面板
      */
-    $config1 = array(
-        'menu_title' => 'StarFish 设置2',
-        'menu_icon' => 'dashicons-admin-generic',
+    $another_config = array(
+        'menu_title' => 'StarFish 演示2',
+        'menu_icon' => 'dashicons-star-half',
         'menu_position' => 20,
         'option_name' => 'starfish_config_1',
         'pages' => array(
             array(
                 'id' => 'general_page1',
                 'title' => '常规设置1',
-                'icon' => 'dashicons-admin-generic',
                 'fields' => array(
                     array(
-                        'id' => 'site_title',
+                        'id' => 'site_title_01',
                         'type' => 'text',
-                        'title' => '网站标题',
-                        'desc' => '请输入您的网站标题',
-                        'default' => '我的网站',
-                        'placeholder' => '输入网站标题',
+                        'title' => '标题1',
+                        'desc' => '请输入您的标题',
+                        'default' => '我的标题1',
+                        'placeholder' => '输入标题',
                     ),
                 )
             ),
             array(
                 'id' => 'general_page2',
                 'title' => '常规设置2',
-                'icon' => 'dashicons-admin-generic',
                 'fields' => array(
                     array(
-                        'id' => 'site_title_000',
+                        'id' => 'site_title_02',
                         'type' => 'text',
-                        'title' => '网站标题',
-                        'desc' => '请输入您的网站标题',
-                        'default' => '我的网站',
-                        'placeholder' => '输入网站标题',
+                        'title' => '标题2',
+                        'desc' => '请输入您的标题',
+                        'default' => '我的标题2',
+                        'placeholder' => '输入标题',
                     ),
                 )
             ),
         )
     );
 
-    // $one = new StarFish();
-    // $one->init($config);
-
-    // $one1 = new StarFish();
-    // $one1->init($config1);
+    // 每个设置面板都需要单独实例化一个类
+    $anotherStarFish = new StarFish();
+    $anotherStarFish->init($another_config);
 
 
-
+    /**
+     * 3. 使用静态方法实例化，不建议这样做，这样只能在系统中存在一个实例了
+     */
+    // StarFish::get_instance()->init($config);
 });
-

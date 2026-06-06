@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: StarFish
+ * Plugin Name: StarFish 演示
  * Plugin URI: https://vtheme.cn/starfish
  * Description: 一个轻量级的 WordPress 配置框架
  * Author: VTHEME
@@ -14,9 +14,8 @@ if (!defined('ABSPATH')) {
 }
 
 // 定义插件常量
-define('VCONFIG_VERSION', '1.0.0');
-define('VCONFIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('VCONFIG_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('STARFISH_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('STARFISH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 /**
  * 加载翻译文本域
@@ -35,7 +34,7 @@ function starfish_load_textdomain() {
  * 加载配置文件
  */
 function starfish_load_init() {
-    require_once VCONFIG_PLUGIN_DIR . 'config.php';
+    require_once STARFISH_PLUGIN_DIR . 'setup.php';
 }
 add_action('plugins_loaded', 'starfish_load_init');
 
