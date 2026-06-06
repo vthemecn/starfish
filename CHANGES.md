@@ -7,6 +7,11 @@
 
 ### 2.7.0
 - feat 支持依赖字段多运算符比较，PHP端预判断隐藏状态
+- feat Group 字段添加排序 Sortable.js
+- feat Group 字段添加下拉隐藏功能
+- feat Sorter 字段添加排序 Sortable.js
+- refactor Image 重构功能
+- fix 优化 select 单选或多选的问题
 
 ### 2.6.0
 - feat 新增声明 StarFish 重复检查
@@ -22,7 +27,7 @@
 - feat 完成标子页面和签页功能
 
 ### 2.3.0
-- fix 修复发现的问题 
+- fix 修复发现的问题
 
 ### 2.2.0
 - feat 完成基本公能

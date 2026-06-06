@@ -470,6 +470,15 @@
      * 初始化群组字段
      */
     function initGroupFields() {
+        // 检查 Sortable 是否可用
+        if (typeof Sortable !== 'undefined') {
+            // 初始化现有 Group 的拖拽排序
+            var wrappers = document.querySelectorAll('.starfish-group-wrapper');
+            wrappers.forEach(function(wrapper) {
+                initGroupSortable(wrapper);
+            });
+        }
+        
         var addButtons = document.querySelectorAll('.starfish-group-add');
         
         addButtons.forEach(function(button) {
@@ -509,8 +518,19 @@
                 // 绑定删除按钮
                 bindGroupRemoveButton(newItem);
                 
+                // 绑定展开/收起按钮
+                var toggleButton = newItem.querySelector('.starfish-group-toggle');
+                if (toggleButton) {
+                    bindGroupToggleButton(toggleButton);
+                }
+                
                 // 初始化新项中的特殊字段（上传、图片、画廊等）
                 initializeSpecialFieldsInItem(newItem, fieldId, newIndex);
+                
+                // 重新初始化拖拽排序（因为添加了新项）
+                if (typeof Sortable !== 'undefined') {
+                    initGroupSortable(wrapper);
+                }
                 
                 // 更新隐藏字段的值
                 updateGroupHiddenValue(wrapper);
@@ -521,6 +541,12 @@
         var removeButtons = document.querySelectorAll('.starfish-group-remove');
         removeButtons.forEach(function(button) {
             bindGroupRemoveButton(button.closest('.starfish-group-item'));
+        });
+        
+        // 绑定展开/收起按钮
+        var toggleButtons = document.querySelectorAll('.starfish-group-toggle');
+        toggleButtons.forEach(function(button) {
+            bindGroupToggleButton(button);
         });
         
         // 初始化所有已存在的 Group 的隐藏字段值
@@ -573,6 +599,73 @@
         
         // 更新隐藏字段的值为 JSON 字符串
         hiddenInput.value = JSON.stringify(values);
+    }
+    
+    /**
+     * 初始化 Group 字段的拖拽排序
+     */
+    function initGroupSortable(wrapper) {
+        var itemsContainer = wrapper.querySelector('.starfish-group-items');
+        if (!itemsContainer) return;
+        
+        // 如果已经初始化过，先销毁
+        if (itemsContainer._sortable) {
+            itemsContainer._sortable.destroy();
+        }
+        
+        // 初始化 Sortable
+        itemsContainer._sortable = new Sortable(itemsContainer, {
+            animation: 150,
+            handle: '.starfish-group-drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            
+            onEnd: function(evt) {
+                // 拖拽结束后更新所有项的索引和标题
+                updateGroupIndices(wrapper);
+                updateGroupTitles(wrapper);
+                // 更新隐藏字段的值
+                updateGroupHiddenValue(wrapper);
+            }
+        });
+    }
+    
+    /**
+     * 更新 Group 字段的索引
+     */
+    function updateGroupIndices(wrapper) {
+        var items = wrapper.querySelectorAll('.starfish-group-item');
+        var fieldId = wrapper.getAttribute('data-field-id');
+        
+        items.forEach(function(item, index) {
+            // 更新 data-index
+            item.setAttribute('data-index', index);
+            
+            // 更新所有 input/select/textarea 的 name 属性中的索引
+            var inputs = item.querySelectorAll('input, select, textarea');
+            inputs.forEach(function(input) {
+                var name = input.getAttribute('name');
+                if (name) {
+                    // 替换 name 中的索引部分：[fieldId][oldIndex][subField] -> [fieldId][newIndex][subField]
+                    var newName = name.replace(
+                        new RegExp('\\[' + fieldId + '\\]\\[\\d+\\]\\[', 'g'),
+                        '[' + fieldId + '][' + index + ']['
+                    );
+                    input.setAttribute('name', newName);
+                }
+                
+                // 更新 id 属性中的索引
+                var id = input.getAttribute('id');
+                if (id) {
+                    var newId = id.replace(
+                        new RegExp('_' + fieldId + '_\\d+_', 'g'),
+                        '_' + fieldId + '_' + index + '_'
+                    );
+                    input.setAttribute('id', newId);
+                }
+            });
+        });
     }
     
     /**
@@ -656,6 +749,35 @@
     }
     
     /**
+     * 绑定 Group 展开/收起按钮
+     */
+    function bindGroupToggleButton(button) {
+        if (!button) return;
+        
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            var item = button.closest('.starfish-group-item');
+            if (!item) return;
+            
+            var content = item.querySelector('.starfish-group-content');
+            var icon = button.querySelector('.dashicons');
+            
+            if (content && icon) {
+                // 切换 collapsed 类
+                content.classList.toggle('starfish-group-collapsed');
+                
+                // 切换图标
+                if (content.classList.contains('starfish-group-collapsed')) {
+                    icon.className = 'dashicons dashicons-arrow-down-alt2';
+                } else {
+                    icon.className = 'dashicons dashicons-arrow-up-alt2';
+                }
+            }
+        });
+    }
+    
+    /**
      * 更新群组标题
      */
     function updateGroupTitles(wrapper) {
@@ -696,150 +818,57 @@
         });
     }
     
-    // 排序器拖拽全局变量
-    var draggedItem = null;
-    var dragSourceList = null;
-    
     /**
      * 初始化排序器字段（双列表拖拽）
      */
     function initSorterFields() {
+        // 检查 Sortable 是否可用
+        if (typeof Sortable === 'undefined') {
+            console.warn('Sortable.js is not loaded. Sorter fields will not work.');
+            return;
+        }
+
         var sorterWrappers = document.querySelectorAll('.starfish-sorter-dual-wrapper');
         
-        console.log('Initializing sorter fields, found:', sorterWrappers.length, 'wrappers');
+        console.log('Initializing sorter fields with Sortable.js, found:', sorterWrappers.length, 'wrappers');
         
         sorterWrappers.forEach(function(wrapper) {
             var enabledList = wrapper.querySelector('[id$="_enabled"]');
             var disabledList = wrapper.querySelector('[id$="_disabled"]');
-            var outputInput = wrapper.querySelector('.starfish-sorter-output');
             
             console.log('Enabled list:', enabledList ? 'found' : 'not found');
             console.log('Disabled list:', disabledList ? 'found' : 'not found');
-            console.log('Output input initial value:', outputInput ? outputInput.value : 'not found');
             
+            // 初始化已启用列表
             if (enabledList) {
-                makeDualSortable(enabledList, wrapper);
+                initSortableList(enabledList, wrapper);
             }
             
+            // 初始化已禁用列表
             if (disabledList) {
-                makeDualSortable(disabledList, wrapper);
+                initSortableList(disabledList, wrapper);
             }
         });
     }
     
     /**
-     * 使双列表可排序
+     * 使用 Sortable.js 初始化可排序列表
      */
-    function makeDualSortable(list, wrapper) {
-        // 为列表本身添加 drop 事件，支持拖到空列表
-        list.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        });
+    function initSortableList(list, wrapper) {
+        var fieldId = wrapper.getAttribute('data-field-id');
         
-        list.addEventListener('drop', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        new Sortable(list, {
+            group: fieldId, // 使用字段 ID 作为组名，允许同组内拖拽
+            animation: 150,
+            handle: '.starfish-sorter-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
             
-            if (draggedItem && draggedItem.parentNode !== this) {
-                // 从另一个列表拖过来
-                this.appendChild(draggedItem);
-                draggedItem.classList.remove('dragging');
-                
-                // 清除所有 drag-over 样式
-                clearDragOverStyles(wrapper);
-                
+            onEnd: function(evt) {
                 // 更新隐藏字段的值
                 updateDualSorterOutput(wrapper);
             }
-        });
-        
-        // 初始化列表项
-        initializeListItems(list, wrapper);
-    }
-    
-    /**
-     * 初始化列表项的拖拽事件
-     */
-    function initializeListItems(list, wrapper) {
-        var items = list.querySelectorAll('.starfish-sorter-item');
-        
-        items.forEach(function(item) {
-            // 拖拽开始
-            item.addEventListener('dragstart', function(e) {
-                draggedItem = this;
-                dragSourceList = this.parentNode;
-                
-                setTimeout(function() {
-                    item.classList.add('dragging');
-                }, 0);
-                
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/html', this.innerHTML);
-            });
-            
-            // 拖拽结束
-            item.addEventListener('dragend', function(e) {
-                item.classList.remove('dragging');
-                
-                // 清除所有 drag-over 样式
-                clearDragOverStyles(wrapper);
-                
-                draggedItem = null;
-                dragSourceList = null;
-                
-                // 更新隐藏字段的值
-                updateDualSorterOutput(wrapper);
-            });
-            
-            // 拖拽经过
-            item.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-            });
-            
-            // 拖拽进入
-            item.addEventListener('dragenter', function(e) {
-                e.preventDefault();
-                if (this !== draggedItem && this.parentNode === draggedItem.parentNode) {
-                    this.classList.add('drag-over');
-                }
-            });
-            
-            // 拖拽离开
-            item.addEventListener('dragleave', function(e) {
-                this.classList.remove('drag-over');
-            });
-            
-            // 放置
-            item.addEventListener('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                this.classList.remove('drag-over');
-                
-                if (this !== draggedItem) {
-                    var allItems = Array.from(this.parentNode.querySelectorAll('.starfish-sorter-item'));
-                    var draggedIndex = allItems.indexOf(draggedItem);
-                    var droppedIndex = allItems.indexOf(this);
-                    
-                    if (draggedIndex < droppedIndex) {
-                        this.parentNode.insertBefore(draggedItem, this.nextSibling);
-                    } else {
-                        this.parentNode.insertBefore(draggedItem, this);
-                    }
-                }
-            });
-        });
-    }
-    
-    /**
-     * 清除所有 drag-over 样式
-     */
-    function clearDragOverStyles(wrapper) {
-        var allItems = wrapper.querySelectorAll('.starfish-sorter-item');
-        allItems.forEach(function(i) {
-            i.classList.remove('drag-over');
         });
     }
     

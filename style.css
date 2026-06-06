@@ -394,16 +394,17 @@
   padding: 10px;
   border: 2px dashed #c3c4c7;
   background: #f6f7f7;
-  min-height: 100px;
-  min-width: 100px;
+  height: 100px;
+  width: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .starfish-image-preview img {
-  max-width: 150px;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
 }
 
@@ -412,6 +413,22 @@
   color: #646970;
   font-style: italic;
 }
+
+.starfish-image-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.starfish-image-action {
+  display: flex;
+}
+.starfish-image-action input[type='text'] {
+  flex: 0 0 auto;
+}
+
+
+
 
 /* ==================== 画廊 ==================== */
 .starfish-gallery-preview {
@@ -479,11 +496,48 @@
 
 .starfish-group-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding:4px 15px;
   background: #f6f7f7;
   border-bottom: 1px solid #c3c4c7;
+}
+
+.starfish-group-drag-handle {
+  margin-right: 12px;
+  margin-left: auto !important;
+  color: #8c8f94;
+  cursor: move;
+  display: flex;
+  align-items: center;
+}
+
+.starfish-group-drag-handle:hover {
+  color: #2271b1;
+}
+
+.starfish-group-drag-handle .dashicons {
+  font-size: 18px;
+}
+
+.starfish-group-toggle {
+  padding: 4px 4px !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  margin-right: 8px;
+  background: transparent;
+  border: none !important;
+  color: #8c8f94;
+}
+
+.starfish-group-toggle:hover {
+  background: #f0f0f1;
+  border-color: #c3c4c7;
+}
+
+.starfish-group-toggle .dashicons {
+  font-size: 18px;
+  color: #8c8f94;
 }
 
 .starfish-group-title {
@@ -493,20 +547,22 @@
 }
 
 .starfish-group-remove {
-  padding: 4px 8px;
   font-size: 12px;
-  color: #b32d2e;
+  color: #8c8f94 !important;
   height: 30px !important;
-  min-height: 30px !important;
-}
-
-.starfish-group-remove:hover {
-  color: #b32d2e;
-  border-color: #b32d2e;
+  line-height: 1 !important;
+  padding: 0 4px !important;
+  border: none !important;
+  background: transparent;
 }
 
 .starfish-group-content {
   padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.starfish-group-content.starfish-group-collapsed {
+  display: none;
 }
 
 .starfish-group-content .starfish-field {
@@ -542,60 +598,6 @@
   .starfish-sub-field label {
     margin: 0 10px 10px 0;
   }
-}
-
-/* ==================== 排序器 ==================== */
-.starfish-sorter-wrapper {
-  border: 1px solid #c3c4c7;
-  padding: 0;
-  background: #fff;
-}
-
-.starfish-sorter-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.starfish-sorter-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  margin-bottom: 0;
-  border-bottom: 1px solid #f0f0f1;
-  background: #fff;
-  cursor: move;
-  transition: background 0.15s ease;
-}
-
-/* .starfish-sorter-item:last-child {
-    border-bottom: none;
-} */
-
-.starfish-sorter-item:hover {
-  background: #f6f7f7;
-}
-
-.starfish-sorter-item.ui-sortable-helper {
-  opacity: 0.9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-.starfish-sorter-handle {
-  margin-right: 12px;
-  color: #8c8f94;
-  cursor: move;
-}
-
-.starfish-sorter-handle .dashicons {
-  font-size: 18px;
-}
-
-.starfish-sorter-label {
-  flex: 1;
-  font-size: 14px;
-  color: #2c3338;
 }
 
 /* ==================== 排序器（双列表拖拽）==================== */
@@ -640,7 +642,7 @@
 
 .starfish-sorter-title {
   margin: 0;
-  padding: 15px;
+  padding: 9px 10px;
   font-size: 14px;
   font-weight: 600;
   color: #1d2327;
@@ -658,7 +660,7 @@
 .starfish-sorter-item {
   display: flex;
   align-items: center;
-  padding: 12px 15px;
+  padding: 6px 6px;
   margin-bottom: 8px;
   border: 1px solid #c3c4c7;
   background: #fff;
@@ -684,6 +686,23 @@
 
 .starfish-sorter-item.drag-over {
   border-top: 3px solid #2271b1;
+}
+
+/* Sortable.js 样式类 */
+.sortable-ghost {
+  opacity: 0.4;
+  background: #f0f0f1;
+}
+
+.sortable-chosen {
+  background: #f6f7f7;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sortable-drag {
+  opacity: 0.8;
+  background: #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
 .starfish-sorter-handle {
@@ -809,11 +828,4 @@
   padding: 20px 0 0 0;
   border-top: 1px solid #c3c4c7;
 }
-
-/* ==================== 覆盖 ==================== */
-.starfish-form .starfish-group-remove {
-  line-height: 1 !important;
-  padding: 0 4px;
-}
-
 

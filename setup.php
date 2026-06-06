@@ -132,17 +132,16 @@ $config = array(
                     'title' => '背景图片',
                     'desc' => '上传网站背景图片',
                     'button_text' => '选择背景图',
-                    'default' => '',
+                    'default' => ''
                 ),
                 array(
                     'id' => 'logo_image',
                     'type' => 'image',
-                    'title' => '网站 Logo',
+                    'title' => '网站 Logo11',
                     'desc' => '上传网站 Logo 图片',
                     'button_text' => '选择 Logo',
-                    'preview_size' => 'medium',
-                    'default' => '',
-                    'dependency' => array('maintenance_mode', '==', ''),
+                    'preview' => true,
+                    'default' => ''
                 ),
                 array(
                     'id' => 'gallery_images',
@@ -166,6 +165,7 @@ $config = array(
                             'desc' => '上传用户照片',
                             'button_text' => '上传',
                             'preview_size' => 'medium',
+                            'preview' => true,
                             'default' => ''
                         ),
                         array(
