@@ -4,12 +4,12 @@
  * License: GPL v2 or later
  * Text Domain: starfish
  * @package StarFish
- * @version 2.7.0
+ * @version 2.7.1
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn
  */
 
-defined('STARFISH_VERSION') or define('STARFISH_VERSION', '2.7.0');
+defined('STARFISH_VERSION') or define('STARFISH_VERSION', '2.7.1');
 
 if (!defined('ABSPATH')) { exit; }
 
