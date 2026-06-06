@@ -75,9 +75,10 @@
      */
     function checkDependency(field) {
         var dependencyFieldId = field.getAttribute('data-dependency-field');
+        var dependencyOperator = field.getAttribute('data-dependency-operator') || '==';
         var dependencyValue = field.getAttribute('data-dependency-value');
         
-        if (!dependencyFieldId || !dependencyValue) {
+        if (!dependencyFieldId || dependencyValue === null) {
             return;
         }
         
@@ -90,11 +91,32 @@
         // 获取源字段的值
         var sourceValue = getSourceFieldValue(sourceField);
         
-        // 比较值并显示/隐藏字段
-        if (sourceValue === dependencyValue) {
+        // 根据运算符比较值并显示/隐藏字段
+        if (compareValues(sourceValue, dependencyValue, dependencyOperator)) {
             field.classList.remove('starfish-hidden');
         } else {
             field.classList.add('starfish-hidden');
+        }
+    }
+    
+    /**
+     * 比较两个值
+     */
+    function compareValues(sourceValue, targetValue, operator) {
+        switch(operator) {
+            case '>':
+                return sourceValue > targetValue;
+            case '<':
+                return sourceValue < targetValue;
+            case '>=':
+                return sourceValue >= targetValue;
+            case '<=':
+                return sourceValue <= targetValue;
+            case '!=':
+                return sourceValue !== targetValue;
+            case '==':
+            default:
+                return sourceValue === targetValue;
         }
     }
     

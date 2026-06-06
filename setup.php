@@ -142,10 +142,7 @@ $config = array(
                     'button_text' => '选择 Logo',
                     'preview_size' => 'medium',
                     'default' => '',
-                    'dependency' => array(
-                        'field' => 'maintenance_mode',
-                        'value' => '',
-                    ),
+                    'dependency' => array('maintenance_mode', '==', ''),
                 ),
                 array(
                     'id' => 'gallery_images',
@@ -223,10 +220,7 @@ $config = array(
                     'desc' => '网站的 meta 关键词，用逗号分隔',
                     'rows' => 2,
                     'default' => '',
-                    'dependency' => array(
-                        'field' => 'seo_enabled',
-                        'value' => '1',
-                    ),
+                    'dependency' => array('seo_enabled', '==', '1'),
                 ),
                 array(
                     'id' => 'meta_description',
@@ -235,10 +229,7 @@ $config = array(
                     'desc' => '网站的 meta 描述',
                     'rows' => 3,
                     'default' => '',
-                    'dependency' => array(
-                        'field' => 'seo_enabled',
-                        'value' => '1',
-                    ),
+                    'dependency' => array('seo_enabled', '==', '1'),
                 ),
                 array(
                     'id' => 'google_analytics',
@@ -271,10 +262,7 @@ $config = array(
                     'max' => 72,
                     'step' => 1,
                     'default' => 24,
-                    'dependency' => array(
-                        'field' => 'enable_cache',
-                        'value' => '1',
-                    ),
+                    'dependency' => array('enable_cache', '==', '1'),
                 ),
                 array(
                     'id' => 'minify_css',

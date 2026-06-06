@@ -308,21 +308,65 @@ array(
 
 ## 🔗 字段依赖
 
-实现字段间的联动效果：
+实现字段间的联动效果，支持多种运算符：
+
+### 基本用法（等于判断）
 
 ```php
 array(
     'id' => 'logo_image',
     'type' => 'image',
     'title' => 'Logo',
-    'dependency' => array(
-        'field' => 'maintenance_mode',  // 依赖的字段 ID
-        'value' => '',                   // 依赖的值
-    ),
+    'dependency' => array('maintenance_mode', '==', ''),
 )
 ```
 
-只有当 `maintenance_mode` 的值为空时，`logo_image` 字段才会显示。
+### 支持的运算符
+
+- `==` ：等于
+- `!=` ：不等于
+- `>` ：大于
+- `<` ：小于
+- `>=` ：大于等于
+- `<=` ：小于等于
+
+### 使用示例
+
+```php
+// 当 seo_enabled 等于 1 时显示
+array(
+    'id' => 'meta_keywords',
+    'type' => 'textarea',
+    'title' => '关键词',
+    'dependency' => array('seo_enabled', '==', '1'),
+)
+
+// 当 items_per_page 大于 10 时显示
+array(
+    'id' => 'advanced_option',
+    'type' => 'text',
+    'title' => '高级选项',
+    'dependency' => array('items_per_page', '>', '10'),
+)
+
+// 当 layout_mode 不等于 'default' 时显示
+array(
+    'id' => 'custom_layout',
+    'type' => 'text',
+    'title' => '自定义布局',
+    'dependency' => array('layout_mode', '!=', 'default'),
+)
+
+// 当 cache_expiration 小于等于 12 时显示
+array(
+    'id' => 'quick_cache',
+    'type' => 'checkbox',
+    'title' => '快速缓存',
+    'dependency' => array('cache_expiration', '<=', '12'),
+)
+```
+
+**注意**：比较时不进行类型转换，使用 JavaScript 的默认比较行为。
 
 ## 🛡️ 数据验证与清理
 

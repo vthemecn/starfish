@@ -308,17 +308,48 @@ if (!class_exists('StarFish')) {
             // 扁平结构：直接从根级别读取字段值
             $value = isset($this->options[$field['id']]) ? $this->options[$field['id']] : $this->get_default_value($field);
             $dependency = isset($field['dependency']) ? $field['dependency'] : null;
-            
             $field_class = 'starfish-field starfish-field-' . $field['type'];
             if ($dependency) {
                 $field_class .= ' starfish-has-dependency';
             }
+            
+            // 解析依赖配置（新格式：array('field_name', 'operator', 'value')）
+            $dep_field = '';
+            $dep_operator = '==';
+            $dep_value = '';
+            if ($dependency && is_array($dependency)) {
+                $dep_field = isset($dependency[0]) ? $dependency[0] : '';
+                $dep_operator = isset($dependency[1]) ? $dependency[1] : '==';
+                $dep_value = isset($dependency[2]) ? $dependency[2] : '';
+            }
+            
+            // 从数据库获取依赖字段的值并判断
+            if ($dep_field) {
+                $dep_field_value = isset($this->options[$dep_field]) ? $this->options[$dep_field] : '';
+                
+                // 根据运算符判断是否隐藏
+                $should_hide = false;
+                switch ($dep_operator) {
+                    case '>': $should_hide = !($dep_field_value > $dep_value); break;
+                    case '<': $should_hide = !($dep_field_value < $dep_value); break;
+                    case '>=': $should_hide = !($dep_field_value >= $dep_value); break;
+                    case '<=': $should_hide = !($dep_field_value <= $dep_value); break;
+                    case '!=': $should_hide = !($dep_field_value != $dep_value); break;
+                    case '==':
+                    default: $should_hide = !($dep_field_value == $dep_value); break;
+                }
+                
+                if ($should_hide) {
+                    $field_class .= ' starfish-hidden';
+                }
+            }
             ?>
             <tr class="<?php echo esc_attr($field_class); ?>" 
                 data-field-id="<?php echo esc_attr($field['id']); ?>"
-                <?php if ($dependency): ?>
-                data-dependency-field="<?php echo esc_attr($dependency['field']); ?>"
-                data-dependency-value="<?php echo esc_attr($dependency['value']); ?>"
+                <?php if ($dep_field): ?>
+                data-dependency-field="<?php echo esc_attr($dep_field); ?>"
+                data-dependency-operator="<?php echo esc_attr($dep_operator); ?>"
+                data-dependency-value="<?php echo esc_attr($dep_value); ?>"
                 <?php endif; ?>>
                 
                 <th scope="row">
@@ -466,18 +497,6 @@ if (!class_exists('StarFish')) {
             
             $multiple = isset($field['multiple']) && $field['multiple'] ? ' multiple' : '';
             $attributes = $this->get_field_attributes($field);
-            
-            // 处理多选时的值 - 确保是数组格式
-            if ($multiple) {
-                if (!is_array($value)) {
-                    // 如果是空值，初始化为空数组
-                    if (empty($value) && $value !== '0') {
-                        $value = array();
-                    } else {
-                        $value = array($value);
-                    }
-                }
-            }
             ?>
             <select name="<?php echo esc_attr($name); ?><?php echo $multiple ? '[]' : ''; ?>" 
                     id="<?php echo esc_attr($id); ?>"
@@ -485,14 +504,7 @@ if (!class_exists('StarFish')) {
                     <?php echo $multiple . ' ' . $attributes; ?>>
                 <?php foreach ($options as $key => $label): ?>
                     <option value="<?php echo esc_attr($key); ?>" 
-                            <?php 
-                            if ($multiple) {
-                                selected(in_array((string)$key, array_map('strval', $value)), true);
-                            } else {
-                                $value = is_string($value) ? $value : ''; 
-                                selected($value, $key);
-                            }
-                            ?>>
+                            <?php selected($value, $key); ?>>
                         <?php echo esc_html($label); ?>
                     </option>
                 <?php endforeach; ?>
@@ -501,7 +513,7 @@ if (!class_exists('StarFish')) {
         }
         
         /**
-         * 根据 query_args 获取选项，Select 专用
+         * 根据 query_args 获取选项
          */
         private function get_query_options($query_args) {
             $options = array();
@@ -534,7 +546,7 @@ if (!class_exists('StarFish')) {
             } elseif ($query_args === 'posts') {
                 // 获取所有文章
                 $posts = get_posts(array(
-                    'numberposts' => 30,
+                    'numberposts' => -1,
                     'post_type' => 'post',
                     'orderby' => 'title',
                     'order' => 'ASC'
@@ -1212,13 +1224,6 @@ if (!class_exists('StarFish')) {
                     return array();
                 case 'sorter':
                     return isset($field['options']) ? array_keys($field['options']) : array();
-                case 'select':
-                    // 如果是多选，默认值为空数组
-                    if (isset($field['multiple']) && $field['multiple']) {
-                        return array();
-                    }
-                    // 单选默认为空字符串
-                    return '';
                 default:
                     return '';
             }
@@ -1371,15 +1376,15 @@ if (!class_exists('StarFish')) {
                         }
                         
                         $sanitized_item = array();
-                        if (isset($field['fields']) && is_array($field['fields'])) {
+                        if (isset($field['fields'])) {
                             foreach ($field['fields'] as $sub_field) {
                                 if (!isset($sub_field['id'])) {
                                     continue;
                                 }
                                 
-                                if (isset($group_item[$sub_field['id']])) {
-                                    $sanitized_item[$sub_field['id']] = $this->sanitize_field_value($sub_field, $group_item[$sub_field['id']]);
-                                }
+                                $sub_field_id = $sub_field['id'];
+                                $sub_value = isset($group_item[$sub_field_id]) ? $group_item[$sub_field_id] : '';
+                                $sanitized_item[$sub_field_id] = $this->sanitize_field_value($sub_field, $sub_value);
                             }
                         }
                         
@@ -1389,18 +1394,6 @@ if (!class_exists('StarFish')) {
                     }
                     
                     return $sanitized_group;
-                case 'select':
-                    // 处理 select 字段，特别是多选的情况
-                    if (isset($field['multiple']) && $field['multiple']) {
-                        // 多选：确保值是数组格式
-                        if (!is_array($value)) {
-                            return array();
-                        }
-                        return array_map('sanitize_text_field', $value);
-                    } else {
-                        // 单选：返回单个值
-                        return sanitize_text_field($value);
-                    }
                 default:
                     return sanitize_text_field($value);
             }
