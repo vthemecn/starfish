@@ -96,6 +96,7 @@ test.js
 test
 test.php
 
+docs
 docs/.vitepress
 docs/.vitepress/cache
 docs/.vitepress/dist

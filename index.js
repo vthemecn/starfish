@@ -146,7 +146,7 @@
      * 绑定图片上传按钮事件
      */
     function bindImageUploadButton(button) {
-        console.log('Binding image upload button:', button);
+        // console.log('Binding image upload button:', button);
         
         // 先移除可能存在的旧事件监听器
         var newButton = button.cloneNode(true);
@@ -156,31 +156,30 @@
         }
         
         button.addEventListener('click', function(e) {
-            console.log('Image button clicked!', this);
+            // console.log('Image button clicked!', this);
             e.preventDefault();
             
             var wrapper = this.closest('.starfish-image-wrapper');
             if (!wrapper) {
-                console.log('Wrapper not found');
+                // console.log('Wrapper not found');
                 return;
             }
-            console.log('Wrapper found:', wrapper);
+            // console.log('Wrapper found:', wrapper);
             
             var urlInput = wrapper.querySelector('.starfish-image-url');
             var previewDiv = wrapper.querySelector('.starfish-image-preview');
             
-            if (!urlInput || !previewDiv) {
-                console.log('urlInput or previewDiv not found');
-                console.log('urlInput:', urlInput);
-                console.log('previewDiv:', previewDiv);
+            if (!urlInput) {
+                // console.log('urlInput not found');
+                // console.log('urlInput:', urlInput);
                 return;
             }
-            console.log('urlInput and previewDiv found');
+            // console.log('urlInput found, previewDiv:', previewDiv ? 'found' : 'not found (optional)');
             
-            console.log('wp.media available:', typeof wp !== 'undefined' && wp.media);
+            // console.log('wp.media available:', typeof wp !== 'undefined' && wp.media);
             
             if (typeof wp !== 'undefined' && wp.media) {
-                console.log('Creating media frame...');
+                // console.log('Creating media frame...');
                 var imageFrame = wp.media({
                     title: starfishData.strings.selectImage || '选择图片',
                     button: {
@@ -192,17 +191,28 @@
                     }
                 });
                 
-                console.log('Media frame created:', imageFrame);
+                // console.log('Media frame created:', imageFrame);
                 
                 imageFrame.on('select', function() {
-                    console.log('Image selected!');
+                    // console.log('Image selected!');
                     var attachment = imageFrame.state().get('selection').first().toJSON();
                     urlInput.value = attachment.url;
                     
-                    // 更新预览
-                    previewDiv.innerHTML = '<img src="' + attachment.url + '" style="max-width: 150px; height: auto;">';
+                    // 更新或创建预览
+                    if (previewDiv) {
+                        previewDiv.innerHTML = '<img src="' + attachment.url + '" style="max-width: 150px; height: auto;">';
+                    } else {
+                        // 如果预览div不存在，创建它
+                        previewDiv = document.createElement('div');
+                        previewDiv.className = 'starfish-image-preview';
+                        previewDiv.innerHTML = '<img src="' + attachment.url + '" style="max-width: 150px; height: auto;">';
+                        
+                        // 插入到 wrapper 的开头
+                        wrapper.insertBefore(previewDiv, wrapper.firstChild);
+                        // console.log('Preview div created');
+                    }
                     
-                    // 如果删除按钮不存在，创建它
+                    // 如果删除按钮不存在，创建它；如果存在但隐藏，显示它
                     var removeBtn = wrapper.querySelector('.starfish-remove-button');
                     if (!removeBtn) {
                         removeBtn = document.createElement('button');
@@ -215,7 +225,11 @@
                         
                         // 绑定删除事件
                         bindRemoveButton(removeBtn);
-                        console.log('Remove button created and bound');
+                        // console.log('Remove button created and bound');
+                    } else {
+                        // 删除按钮已存在，显示它
+                        removeBtn.style.display = '';
+                        // console.log('Remove button shown');
                     }
                     
                     // 触发 change 事件
@@ -223,15 +237,15 @@
                     urlInput.dispatchEvent(event);
                 });
                 
-                console.log('Opening media frame...');
+                // console.log('Opening media frame...');
                 imageFrame.open();
-                console.log('Media frame opened');
+                // console.log('Media frame opened');
             } else {
                 console.log('wp.media not available!');
             }
         });
         
-        console.log('Event listener attached to:', button);
+        // console.log('Event listener attached to:', button);
     }
     
     /**
@@ -697,7 +711,7 @@
      * 初始化群组项中的特殊字段（上传、图片、画廊等）
      */
     function initializeSpecialFieldsInItem(item, fieldId, index) {
-        console.log('Initializing special fields in item, index:', index);
+        // console.log('Initializing special fields in item, index:', index);
         
         // 重新绑定删除按钮事件
         var removeBtn = item.querySelector('.starfish-group-remove');
@@ -710,13 +724,13 @@
         
         // 调试：检查是否找到了按钮
         var imageButtons = item.querySelectorAll('.starfish-image-button');
-        console.log('Found image buttons:', imageButtons.length);
+        // console.log('Found image buttons:', imageButtons.length);
         
         var uploadButtons = item.querySelectorAll('.starfish-upload-button');
-        console.log('Found upload buttons:', uploadButtons.length);
+        // console.log('Found upload buttons:', uploadButtons.length);
         
         var galleryButtons = item.querySelectorAll('.starfish-gallery-button');
-        console.log('Found gallery buttons:', galleryButtons.length);
+        // console.log('Found gallery buttons:', galleryButtons.length);
     }
     
     /**
@@ -769,9 +783,9 @@
                 
                 // 切换图标
                 if (content.classList.contains('starfish-group-collapsed')) {
-                    icon.className = 'dashicons dashicons-arrow-down-alt2';
-                } else {
                     icon.className = 'dashicons dashicons-arrow-up-alt2';
+                } else {
+                    icon.className = 'dashicons dashicons-arrow-down-alt2';
                 }
             }
         });
@@ -830,14 +844,14 @@
 
         var sorterWrappers = document.querySelectorAll('.starfish-sorter-dual-wrapper');
         
-        console.log('Initializing sorter fields with Sortable.js, found:', sorterWrappers.length, 'wrappers');
+        // console.log('Initializing sorter fields with Sortable.js, found:', sorterWrappers.length, 'wrappers');
         
         sorterWrappers.forEach(function(wrapper) {
             var enabledList = wrapper.querySelector('[id$="_enabled"]');
             var disabledList = wrapper.querySelector('[id$="_disabled"]');
             
-            console.log('Enabled list:', enabledList ? 'found' : 'not found');
-            console.log('Disabled list:', disabledList ? 'found' : 'not found');
+            // console.log('Enabled list:', enabledList ? 'found' : 'not found');
+            // console.log('Disabled list:', disabledList ? 'found' : 'not found');
             
             // 初始化已启用列表
             if (enabledList) {

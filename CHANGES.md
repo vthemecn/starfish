@@ -5,6 +5,12 @@
 - 增加自定义字段类型，用户可以自定义字段类型
 - 考虑增加，为指定类型或者ID的文章页面，添加自定义字段
 
+### 2.8.0
+- fix 处理图片上传的一个bug
+- fix 修改 group 中 image 字段的一个bug
+- feat textarea 字段添加 sanitize 属性，可以选择不过滤数据
+- fix 移除了 index.js 中的 console 输出内容
+
 ### 2.7.0
 - feat 支持依赖字段多运算符比较，PHP端预判断隐藏状态
 - feat Group 字段添加排序 Sortable.js

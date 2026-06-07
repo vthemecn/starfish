@@ -4,7 +4,7 @@
  * License: GPL v2 or later
  * Text Domain: starfish
  * @package StarFish
- * @version 2.7.1
+ * @version 2.8.0
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn
  */
@@ -434,6 +434,8 @@ if (!class_exists('StarFish')) {
         
         /**
          * 文本字段
+         * 绝对不能直接 echo $value。即使你关闭了数据库层面的过滤，也必须使用 esc_attr() 
+         * 否则，如果用户输入了双引号 "，就会破坏 HTML 结构，导致严重的 XSS 漏洞。
          */
         private function render_text_field($field, $name, $id, $value) {
             $attributes = $this->get_field_attributes($field);
@@ -448,17 +450,16 @@ if (!class_exists('StarFish')) {
         }
         
         /**
-         * 文本域字段
+         * 渲染文本域字段
          */
         private function render_textarea_field($field, $name, $id, $value) {
             $rows = isset($field['rows']) ? intval($field['rows']) : 5;
             $attributes = $this->get_field_attributes($field);
+            
+            // 判断是否开启了 sanitize
+            $output_value = (isset($field['sanitize']) && $field['sanitize'] === false) ? $value : esc_textarea($value);
             ?>
-            <textarea name="<?php echo esc_attr($name); ?>" 
-                    id="<?php echo esc_attr($id); ?>" 
-                    rows="<?php echo esc_attr($rows); ?>"
-                    class="large-text"
-                    <?php echo $attributes; ?>><?php echo esc_textarea($value); ?></textarea>
+            <textarea name="<?php echo esc_attr($name); ?>" id="<?php echo esc_attr($id); ?>" rows="<?php echo esc_attr($rows); ?>" class="large-text" <?php echo $attributes; ?>><?php echo $output_value; ?></textarea>
             <?php
         }
         
@@ -728,7 +729,6 @@ if (!class_exists('StarFish')) {
                     id="<?php echo esc_attr($id); ?>" 
                     value="<?php echo esc_attr($value); ?>"
                     class="regular-text starfish-upload-url"
-                    readonly
                     <?php echo $attributes; ?>>
                 <button type="button" class="button starfish-upload-button" data-field-id="<?php echo esc_attr($id); ?>">
                     <?php echo esc_html($button_text); ?>
@@ -752,16 +752,18 @@ if (!class_exists('StarFish')) {
             $attributes = $this->get_field_attributes($field);
             ?>
             <div class="starfish-image-wrapper">
-                <?php if ($show_preview && !empty($value)): ?>
+                <?php if ($show_preview): ?>
                     <div class="starfish-image-preview">
-                        <?php 
-                        $attachment_id = attachment_url_to_postid($value);
-                        if ($attachment_id) {
-                            echo wp_get_attachment_image($attachment_id, $preview_size);
-                        } else {
-                            echo '<img src="' . esc_url($value) . '" style="max-width: 150px; height: auto;">';
-                        }
-                        ?>
+                        <?php if (!empty($value)): ?>
+                            <?php 
+                            $attachment_id = attachment_url_to_postid($value);
+                            if ($attachment_id) {
+                                echo wp_get_attachment_image($attachment_id, $preview_size);
+                            } else {
+                                echo '<img src="' . esc_url($value) . '" style="max-width: 150px; height: auto;">';
+                            }
+                            ?>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 <div class="starfish-image-action">
@@ -857,7 +859,8 @@ if (!class_exists('StarFish')) {
                                         <span class="dashicons dashicons-no"></span>
                                     </button>
                                 </div>
-                                <div class="starfish-group-content starfish-group-collapsed">
+                                <div class="starfish-group-content">
+                                    <!-- .starfish-group-collapsed -->
                                     <?php foreach ($fields as $sub_field): ?>
                                         <?php 
                                         $sub_field_name = $name . '[' . $index . '][' . $sub_field['id'] . ']';
@@ -912,37 +915,41 @@ if (!class_exists('StarFish')) {
                                                     <?php if (!empty($sub_field['title'])): ?>
                                                         <label><?php echo esc_html($sub_field['title']); ?></label>
                                                     <?php endif; ?>
-                                                    <?php if ($sub_show_preview && !empty($sub_value)): ?>
-                                                        <div class="starfish-image-preview">
-                                                            <?php 
-                                                            $sub_attachment_id = attachment_url_to_postid($sub_value);
-                                                            if ($sub_attachment_id) {
-                                                                echo wp_get_attachment_image($sub_attachment_id, $sub_preview_size);
-                                                            } else {
-                                                                echo '<img src="' . esc_url($sub_value) . '" style="max-width: 150px; height: auto;">';
-                                                            }
-                                                            ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                    <div class="starfish-image-action">
-                                                        <input type="text" 
-                                                            name="<?php echo esc_attr($sub_field_name); ?>" 
-                                                            id="<?php echo esc_attr($sub_field_id); ?>" 
-                                                            value="<?php echo esc_attr($sub_value); ?>"
-                                                            class="starfish-image-url"
-                                                            placeholder="<?php echo isset($sub_field['placeholder']) ? esc_attr($sub_field['placeholder']) : __('Image URL', 'starfish'); ?>">
-                                                        <button type="button" class="button starfish-image-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>">
-                                                            <?php echo esc_html($sub_button_text); ?>
-                                                        </button>
-                                                        <?php if (!empty($sub_value)): ?>
-                                                            <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>">
-                                                                <?php _e('Remove', 'starfish'); ?>
+                                                    <div style="display: inline-block;">
+                                                        <?php if ($sub_show_preview): ?>
+                                                            <div class="starfish-image-preview">
+                                                                <?php if (!empty($sub_value)): ?>
+                                                                    <?php 
+                                                                    $sub_attachment_id = attachment_url_to_postid($sub_value);
+                                                                    if ($sub_attachment_id) {
+                                                                        echo wp_get_attachment_image($sub_attachment_id, $sub_preview_size);
+                                                                    } else {
+                                                                        echo '<img src="' . esc_url($sub_value) . '" style="max-width: 150px; height: auto;">';
+                                                                    }
+                                                                    ?>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <div class="starfish-image-action">
+                                                            <input type="text" 
+                                                                name="<?php echo esc_attr($sub_field_name); ?>" 
+                                                                id="<?php echo esc_attr($sub_field_id); ?>" 
+                                                                value="<?php echo esc_attr($sub_value); ?>"
+                                                                class="starfish-image-url"
+                                                                placeholder="<?php echo isset($sub_field['placeholder']) ? esc_attr($sub_field['placeholder']) : __('Image URL', 'starfish'); ?>">
+                                                            <button type="button" class="button starfish-image-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>">
+                                                                <?php echo esc_html($sub_button_text); ?>
                                                             </button>
+                                                            <?php if (!empty($sub_value)): ?>
+                                                                <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>">
+                                                                    <?php _e('Remove', 'starfish'); ?>
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <?php if (!empty($sub_field['desc'])): ?>
+                                                            <p class="description"><?php echo esc_html($sub_field['desc']); ?></p>
                                                         <?php endif; ?>
                                                     </div>
-                                                    <?php if (!empty($sub_field['desc'])): ?>
-                                                        <p class="description"><?php echo esc_html($sub_field['desc']); ?></p>
-                                                    <?php endif; ?>
                                                 </div>
                                                 <?php
                                                 break;
@@ -991,7 +998,7 @@ if (!class_exists('StarFish')) {
                                 <span class="dashicons dashicons-no"></span>
                             </button>
                         </div>
-                        <div class="starfish-group-content starfish-group-collapsed">
+                        <div class="starfish-group-content">
                             <?php foreach ($fields as $sub_field): ?>
                                 <?php 
                                 // 构建子字段的name和id
@@ -1038,6 +1045,7 @@ if (!class_exists('StarFish')) {
                                         break;
                                     case 'image':
                                     case 'upload':
+                                        $sub_preview_size = isset($sub_field['preview_size']) ? $sub_field['preview_size'] : 'thumbnail';
                                         $sub_button_text = isset($sub_field['button_text']) ? $sub_field['button_text'] : __('Select Image', 'starfish');
                                         $sub_show_preview = isset($sub_field['preview']) && $sub_field['preview'] === true;
                                         ?>
@@ -1045,27 +1053,29 @@ if (!class_exists('StarFish')) {
                                             <?php if (!empty($sub_field['title'])): ?>
                                                 <label><?php echo esc_html($sub_field['title']); ?></label>
                                             <?php endif; ?>
-                                            <?php if ($sub_show_preview): ?>
-                                                <div class="starfish-image-preview" style="display: none;">
+                                            <div style="display: inline-block;">
+                                                <?php if ($sub_show_preview): ?>
+                                                    <div class="starfish-image-preview">
+                                                    </div>
+                                                <?php endif; ?>
+                                                <div class="starfish-image-action">
+                                                    <input type="text" 
+                                                        name="<?php echo esc_attr($sub_field_name); ?>" 
+                                                        id="<?php echo esc_attr($sub_field_id); ?>" 
+                                                        value=""
+                                                        class="starfish-image-url"
+                                                        placeholder="<?php echo isset($sub_field['placeholder']) ? esc_attr($sub_field['placeholder']) : __('Image URL', 'starfish'); ?>">
+                                                    <button type="button" class="button starfish-image-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>">
+                                                        <?php echo esc_html($sub_button_text); ?>
+                                                    </button>
+                                                    <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>" style="display: none;">
+                                                        <?php _e('Remove', 'starfish'); ?>
+                                                    </button>
                                                 </div>
-                                            <?php endif; ?>
-                                            <div class="starfish-image-action">
-                                                <input type="text" 
-                                                    name="<?php echo esc_attr($sub_field_name); ?>" 
-                                                    id="<?php echo esc_attr($sub_field_id); ?>" 
-                                                    value=""
-                                                    class="starfish-image-url"
-                                                    placeholder="<?php echo isset($sub_field['placeholder']) ? esc_attr($sub_field['placeholder']) : __('Image URL', 'starfish'); ?>">
-                                                <button type="button" class="button starfish-image-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>">
-                                                    <?php echo esc_html($sub_button_text); ?>
-                                                </button>
-                                                <button type="button" class="button starfish-remove-button" data-field-id="<?php echo esc_attr($sub_field_id); ?>" style="display: none;">
-                                                    <?php _e('Remove', 'starfish'); ?>
-                                                </button>
+                                                <?php if (!empty($sub_field['desc'])): ?>
+                                                    <p class="description"><?php echo esc_html($sub_field['desc']); ?></p>
+                                                <?php endif; ?>
                                             </div>
-                                            <?php if (!empty($sub_field['desc'])): ?>
-                                                <p class="description"><?php echo esc_html($sub_field['desc']); ?></p>
-                                            <?php endif; ?>
                                         </div>
                                         <?php
                                         break;
@@ -1360,6 +1370,9 @@ if (!class_exists('StarFish')) {
             switch ($field['type']) {
                 case 'text':
                 case 'textarea':
+                    if (isset($field['sanitize']) && $field['sanitize'] === false) {
+                        return $value; 
+                    }
                     return sanitize_text_field($value);
                 case 'number':
                     return intval($value);
@@ -1672,10 +1685,39 @@ if (!class_exists('StarFish')) {
             
             $file = $_FILES['starfish_import_file'];
             
-            // 验证文件类型
+            // 验证文件大小（限制为1MB）
+            $max_file_size = 1 * 1024 * 1024; // 1MB
+            if ($file['size'] > $max_file_size) {
+                wp_send_json_error(array(
+                    'message' => __('File size exceeds the 1MB limit.', 'starfish')
+                ));
+                return;
+            }
+            
+            // 验证文件扩展名
             if (pathinfo($file['name'], PATHINFO_EXTENSION) !== 'json') {
                 wp_send_json_error(array(
                     'message' => __('Only JSON format backup files are supported.', 'starfish')
+                ));
+                return;
+            }
+            
+            // 验证 MIME 类型
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime_type = $finfo->file($file['tmp_name']);
+            $allowed_mime_types = array('application/json', 'text/plain', 'text/json');
+            if (!in_array($mime_type, $allowed_mime_types)) {
+                wp_send_json_error(array(
+                    'message' => __('Invalid file type. Only JSON files are allowed.', 'starfish')
+                ));
+                return;
+            }
+            
+            // 使用 WordPress 的文件类型检查进行额外验证
+            $wp_filetype = wp_check_filetype($file['name']);
+            if ($wp_filetype['ext'] !== 'json') {
+                wp_send_json_error(array(
+                    'message' => __('Invalid file extension.', 'starfish')
                 ));
                 return;
             }

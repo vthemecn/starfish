@@ -408,11 +408,11 @@
   display: block;
 }
 
-.starfish-image-preview:empty::before {
+/* .starfish-image-preview:empty::before {
   content: '暂无图片';
   color: #646970;
   font-style: italic;
-}
+} */
 
 .starfish-image-wrapper {
   display: flex;
@@ -423,11 +423,13 @@
 .starfish-image-action {
   display: flex;
 }
-.starfish-image-action input[type='text'] {
-  flex: 0 0 auto;
+
+@media screen and (min-width:768px) {
+  .starfish-image-action input[type='text'] {
+    flex: 0 0 auto;
+    width: 400px;
+  }  
 }
-
-
 
 
 /* ==================== 画廊 ==================== */
@@ -498,7 +500,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding:4px 15px;
+  padding:3px 5px;
   background: #f6f7f7;
   border-bottom: 1px solid #c3c4c7;
 }
@@ -521,23 +523,27 @@
 }
 
 .starfish-group-toggle {
+  box-sizing: border-box;
   padding: 4px 4px !important;
   min-height: 30px !important;
   height: 30px !important;
   margin-right: 8px;
   background: transparent;
   border: none !important;
-  color: #8c8f94;
 }
-
-.starfish-group-toggle:hover {
-  background: #f0f0f1;
-  border-color: #c3c4c7;
+.starfish-group-toggle:hover,
+.starfish-group-toggle:focus,
+.starfish-group-toggle:focus-visible {
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .starfish-group-toggle .dashicons {
-  font-size: 18px;
+  font-size: 16px;
   color: #8c8f94;
+  margin-top: 3px;
 }
 
 .starfish-group-title {
@@ -592,11 +598,18 @@
 
 .starfish-sub-field label {
   margin: 0 10px 10px 0;
+  font-weight: bold;
 }
 
 @media screen and (min-width:768px) {
   .starfish-sub-field label {
     margin: 0 10px 10px 0;
+  }
+  .starfish-sub-field.starfish-image-wrapper{
+    display: block;
+  }
+  .starfish-sub-field.starfish-image-wrapper > label{
+    vertical-align: top;
   }
 }
 

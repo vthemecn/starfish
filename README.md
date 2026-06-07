@@ -112,6 +112,7 @@ array(
     'title' => '描述',
     'rows' => 5,
     'default' => '',
+    'sanitize' => false // 默认是 true，关闭以后不进行过滤
 )
 ```
 

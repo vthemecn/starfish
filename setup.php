@@ -164,7 +164,6 @@ $config = array(
                             'title' => '照片',
                             'desc' => '上传用户照片',
                             'button_text' => '上传',
-                            'preview_size' => 'medium',
                             'preview' => true,
                             'default' => ''
                         ),
@@ -238,6 +237,7 @@ $config = array(
                     'desc' => '粘贴 Google Analytics 跟踪代码',
                     'rows' => 5,
                     'default' => '',
+                    'sanitize' => false
                 ),
             ),
         ),
