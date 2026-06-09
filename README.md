@@ -369,6 +369,74 @@ array(
 
 **注意**：比较时不进行类型转换，使用 JavaScript 的默认比较行为。
 
+
+## 自定义类型
+
+可以在配置中添加自定义子类型的配置：
+```php
+array(
+    'id' => 'location_time',
+    'type' => 'custom_time_input',
+    'title' => '自定义时间与位置',
+    'desc' => '你可以手动修改时间，系统会自动验证格式并保存。',
+    'sanitize_callback' => 'save_location_time_data' // 绑定保存函数
+)
+```
+
+渲染逻辑：
+```php
+function handle_starfish_custom_field($field, $field_name, $field_id, $value) {
+    // 根据字段ID
+    if ($field['id'] !== 'location_time') {
+        return;
+    }
+
+    // 根据字段类型
+    // if ($field['type'] !== 'custom_time_input') {
+    //     return;
+    // }
+    $value = current_time('Y-m-d H:i:s');
+    $input_id = esc_attr($field_id) . '_input';
+    ?>
+    <div class="starfish-custom-wrapper" style="">
+        <label for="<?php echo $input_id; ?>" style="display:block; margin-bottom:5px; font-weight:bold;">
+            ⏱️ 设定时间 (格式: YYYY-MM-DD HH:MM:SS)
+        </label>
+        <input 
+            type="text" 
+            id="<?php echo $input_id; ?>" 
+            name="<?php echo esc_attr($field_name); ?>" 
+            value="<?php echo esc_attr($value); ?>" 
+            class="regular-text"
+            autocomplete="off"
+        >
+
+        <p id="<?php echo $input_id; ?>_status" style="margin-top:5px; font-size:12px;"></p>
+
+        <script>
+        (function() {
+            ...
+        })();
+        </script>
+    </div>
+    <?php
+}
+add_action('starfish_render_custom_field', 'handle_starfish_custom_field', 10, 5);
+```
+保存逻辑：
+```php
+function save_location_time_data($raw_input) {
+    $raw_input = trim($raw_input);
+    $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $raw_input);
+    
+    if ($datetime && $datetime->format('Y-m-d H:i:s') === $raw_input) {
+        return $raw_input + 'hello'; 
+    } else {
+        return ''; 
+    }
+}
+```
+
 ## 🛡️ 数据验证与清理
 
 ### 自定义清理回调

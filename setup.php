@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
 // 引入核心类
 require_once plugin_dir_path(__FILE__) . 'starfish.php';
 
+
 /**
  * 配置数组定义
  */
@@ -285,6 +286,14 @@ $config = array(
                     'desc' => '启用网站防火墙',
                     'default' => '',
                 ),
+                // 自定义字段配置
+                array(
+                    'id' => 'location_time',
+                    'type' => 'custom_time_input',
+                    'title' => '自定义时间与位置',
+                    'desc' => '你可以手动修改时间，系统会自动验证格式并保存。',
+                    'sanitize_callback' => 'save_location_time_data'
+                ),
 
             ),
         ),
@@ -351,7 +360,10 @@ $config = array(
     ),
 );
 
-// 初始化 StarFish
+
+/**
+ * 初始化 StarFish
+ */
 add_action('init', function() use ($config) {
     /**
      * 1. 添加设置面板
@@ -410,3 +422,96 @@ add_action('init', function() use ($config) {
      */
     // StarFish::get_instance()->init($config);
 });
+
+
+/**
+ * 自定义字段 - 渲染逻辑
+ */
+function handle_starfish_custom_field($field, $field_name, $field_id, $value) {
+    // 根据字段ID
+    // if ($field['id'] !== 'location_time') {
+    //     return;
+    // }
+
+    // 根据字段类型
+    if ($field['type'] !== 'custom_time_input') {
+        return;
+    }
+
+    // 如果数据库没值，给个默认值方便演示
+    if (empty($value)) {
+        $value = current_time('Y-m-d H:i:s');
+    }
+
+    // 生成一个唯一的 ID 用于 JS 操作
+    $input_id = esc_attr($field_id) . '_input';
+    ?>
+    <div class="starfish-custom-wrapper" style="padding: 15px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
+        
+        <!-- 文本输入框 -->
+        <label for="<?php echo $input_id; ?>" style="display:block; margin-bottom:5px; font-weight:bold;">
+            ⏱️ 设定时间 (格式: YYYY-MM-DD HH:MM:SS)
+        </label>
+        <input 
+            type="text" 
+            id="<?php echo $input_id; ?>" 
+            name="<?php echo esc_attr($field_name); ?>" 
+            value="<?php echo esc_attr($value); ?>" 
+            class="regular-text"
+            autocomplete="off"
+        >
+        
+        <!-- 实时状态提示 -->
+        <p id="<?php echo $input_id; ?>_status" style="margin-top:5px; font-size:12px;"></p>
+
+        <!-- 简单的 JS 实时校验 -->
+        <script>
+        (function() {
+            const input = document.getElementById('<?php echo $input_id; ?>');
+            const status = document.getElementById('<?php echo $input_id; ?>_status');
+            
+            function validateTime() {
+                const val = input.value.trim();
+                // 简单的正则校验 (YYYY-MM-DD HH:MM:SS)
+                const regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+                
+                if (regex.test(val)) {
+                    status.innerHTML = '<span style="color:green;">✅ 格式正确，将被保存</span>';
+                    input.style.borderColor = '#008a20';
+                } else {
+                    status.innerHTML = '<span style="color:#d63638;">❌ 格式错误，请使用 YYYY-MM-DD HH:MM:SS</span>';
+                    input.style.borderColor = '#d63638';
+                }
+            }
+
+            // 页面加载时检查一次
+            validateTime();
+            // 监听输入事件
+            input.addEventListener('input', validateTime);
+        })();
+        </script>
+    </div>
+    <?php
+}
+add_action('starfish_render_custom_field', 'handle_starfish_custom_field', 10, 5);
+
+
+/**
+ * 自定义字段 - 渲染逻辑
+ */
+function save_location_time_data($raw_input) {
+    // 去除首尾空格
+    $raw_input = trim($raw_input);
+    
+    // 尝试按 Y-m-d H:i:s 格式解析
+    $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $raw_input);
+    
+    if ($datetime && $datetime->format('Y-m-d H:i:s') === $raw_input) {
+        // 格式完全正确，返回标准格式存入数据库
+        return $raw_input; 
+    } else {
+        // 格式错误，可以在这里记录日志或返回空字符串
+        // add_settings_error('location_time', 'invalid_format', '时间格式不正确');
+        return ''; 
+    }
+}

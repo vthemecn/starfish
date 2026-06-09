@@ -4,7 +4,7 @@
  * License: GPL v2 or later
  * Text Domain: starfish
  * @package StarFish
- * @version 2.8.0
+ * @version 2.9.0
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn
  */
