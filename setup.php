@@ -415,12 +415,6 @@ add_action('init', function() use ($config) {
     // 每个设置面板都需要单独实例化一个类
     $anotherStarFish = new StarFish();
     $anotherStarFish->init($another_config);
-
-
-    /**
-     * 3. 使用静态方法实例化，不建议这样做，这样只能在系统中存在一个实例了
-     */
-    // StarFish::get_instance()->init($config);
 });
 
 

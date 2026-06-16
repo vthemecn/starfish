@@ -1,6 +1,5 @@
 /**
  * StarFish - WordPress 配置框架 JavaScript
- * 使用原生 JavaScript，不依赖 jQuery
  *
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn

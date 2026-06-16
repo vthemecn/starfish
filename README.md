@@ -48,7 +48,8 @@
         )
     );
 
-    StarFish::get_instance()->init($config);
+    $starFish = new StarFish();
+    $starFish->init($config);
     ```
 
 ## 🚀 快速开始
@@ -373,6 +374,7 @@ array(
 ## 自定义类型
 
 可以在配置中添加自定义子类型的配置：
+
 ```php
 array(
     'id' => 'location_time',
@@ -384,6 +386,7 @@ array(
 ```
 
 渲染逻辑：
+
 ```php
 function handle_starfish_custom_field($field, $field_name, $field_id, $value) {
     // 根据字段ID
@@ -423,7 +426,9 @@ function handle_starfish_custom_field($field, $field_name, $field_id, $value) {
 }
 add_action('starfish_render_custom_field', 'handle_starfish_custom_field', 10, 5);
 ```
+
 保存逻辑：
+
 ```php
 function save_location_time_data($raw_input) {
     $raw_input = trim($raw_input);

@@ -4,31 +4,20 @@
  * License: GPL v2 or later
  * Text Domain: starfish
  * @package StarFish
- * @version 2.9.0
+ * @version 2.10.0
  * @author vthemecn <mail@vtheme.cn>
  * @link https://vtheme.cn
  */
 
-defined('STARFISH_VERSION') or define('STARFISH_VERSION', '2.7.1');
+defined('STARFISH_VERSION') or define('STARFISH_VERSION', '2.10.0');
 
 if (!defined('ABSPATH')) { exit; }
 
 if (!class_exists('StarFish')) {
     class StarFish {
         
-        private static $instance = null;
         private $config = array();
         private $options = array();
-        
-        /**
-         * 获取单例实例
-         */
-        public static function get_instance() {
-            if (null === self::$instance) {
-                self::$instance = new self();
-            }
-            return self::$instance;
-        }
         
         /**
          * 初始化配置
@@ -42,12 +31,12 @@ if (!class_exists('StarFish')) {
             // 如果数据库中没有该 option_name 的记录，创建默认值
             $this->maybe_create_default_options();
         }
-        
+
         /**
          * 如果不存在则创建默认选项
          */
         private function maybe_create_default_options() {
-            $option_name = $this->get_global_option_name();
+            $option_name = $this->get_option_name();
             
             // 检查数据库中是否已存在该选项
             if (get_option($option_name, false) === false) {
@@ -81,7 +70,7 @@ if (!class_exists('StarFish')) {
          * 加载已保存的选项
          */
         private function load_options() {
-            $option_name = $this->get_global_option_name();
+            $option_name = $this->get_option_name();
             $this->options = get_option($option_name, array());
             
             // 确保是数组格式
@@ -237,7 +226,7 @@ if (!class_exists('StarFish')) {
             }
 
             // 使用全局选项名称
-            $option_name = $this->get_global_option_name();
+            $option_name = $this->get_option_name();
             ?>
             <div class="wrap starfish-wrapper">
                 <h1><?php echo esc_html($display_page['title']); ?></h1>
@@ -276,6 +265,9 @@ if (!class_exists('StarFish')) {
                 
                 <form method="post" action="options.php" class="starfish-form">
                     <?php settings_fields($option_name); ?>
+                    
+                    <!-- 添加当前页面标识 -->
+                    <input type="hidden" name="starfish_current_page" value="<?php echo esc_attr($display_page['id']); ?>" />
                     
                     <?php if (!empty($display_page['fields'])): ?>
                         <table class="form-table starfish-form-table" role="presentation">
@@ -1188,7 +1180,7 @@ if (!class_exists('StarFish')) {
             $desc = isset($field['desc']) ? $field['desc'] : __('You can export the current settings as a JSON file for backup, or restore settings from a backup file.', 'starfish');
             
             // 获取全局选项名称并读取所有数据（扁平结构）
-            $global_option_name = $this->get_global_option_name();
+            $global_option_name = $this->get_option_name();
             $all_options = get_option($global_option_name, array());
             
             $backup_data = json_encode($all_options, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -1295,7 +1287,7 @@ if (!class_exists('StarFish')) {
          */
         public function register_settings() {
             // 只注册一个全局设置项
-            $option_name = $this->get_global_option_name();
+            $option_name = $this->get_option_name();
             register_setting(
                 $option_name,
                 $option_name,
@@ -1316,7 +1308,7 @@ if (!class_exists('StarFish')) {
             }
             
             // 获取已保存的选项，以保留未提交页面的数据
-            $option_name = $this->get_global_option_name();
+            $option_name = $this->get_option_name();
             $saved_options = get_option($option_name, array());
             
             // 确保是数组格式
@@ -1324,8 +1316,16 @@ if (!class_exists('StarFish')) {
                 $saved_options = array();
             }
             
-            // 遍历所有页面和字段，只更新提交的字段（扁平结构）
+            // 获取当前提交的页面 ID
+            $current_page_id = isset($_POST['starfish_current_page']) ? $_POST['starfish_current_page'] : '';
+            
+            // 遍历所有页面和字段，只更新当前页面提交的字段
             foreach ($this->config['pages'] as $page) {
+                // 如果不是当前页面，跳过
+                if (!empty($current_page_id) && isset($page['id']) && $page['id'] !== $current_page_id) {
+                    continue;
+                }
+                
                 if (empty($page['fields'])) {
                     continue;
                 }
@@ -1337,13 +1337,14 @@ if (!class_exists('StarFish')) {
                     
                     $field_id = $field['id'];
                     
-                    // 处理 checkbox 和 switcher 类型：未提交时设置为空字符串
+                    // 处理 checkbox 和 switcher 类型
                     if (in_array($field['type'], array('checkbox', 'switcher'))) {
                         if (isset($options[$field_id])) {
+                            // 字段已提交（选中状态）
                             $value = $options[$field_id];
                             $saved_options[$field_id] = $this->sanitize_field_value($field, $value);
                         } else {
-                            // checkbox/switcher 未选中时，显式设置为空字符串
+                            // 字段未提交（未选中状态），设置为空字符串
                             $saved_options[$field_id] = '';
                         }
                     }
@@ -1353,6 +1354,7 @@ if (!class_exists('StarFish')) {
                         // 根据字段类型进行清理，直接保存到根级别
                         $saved_options[$field_id] = $this->sanitize_field_value($field, $value);
                     }
+                    // 注意：其他类型的字段如果未提交，保持原值不变
                 }
             }
             
@@ -1496,10 +1498,6 @@ if (!class_exists('StarFish')) {
                 }
             }
             
-            // 调试：输出当前 screen ID 和有效页面列表
-            // error_log('Current Screen ID: ' . $screen->id);
-            // error_log('Valid Pages: ' . print_r($valid_pages, true));
-            
             // 检查当前页面是否在有效页面列表中（使用更宽松的检查）
             $is_valid_page = false;
             
@@ -1537,10 +1535,11 @@ if (!class_exists('StarFish')) {
                 return;
             }
             
+            $assets_url = $this->starfish_get_assets_url();
             // 加载 CSS
             wp_enqueue_style(
                 'starfish-style',
-                plugin_dir_url(__FILE__) . 'style.css',
+                $assets_url . '/style.css',
                 array(),
                 defined('STARFISH_VERSION') ? STARFISH_VERSION : '1.0.0'
             );
@@ -1548,7 +1547,7 @@ if (!class_exists('StarFish')) {
             // 加载 Sortable.js
             wp_enqueue_script(
                 'sortable-js',
-                plugin_dir_url(__FILE__) . 'sortable.min.js',
+                $assets_url . '/sortable.min.js',
                 array(),
                 '1.15.0',
                 true
@@ -1557,7 +1556,7 @@ if (!class_exists('StarFish')) {
             // 加载 JS
             wp_enqueue_script(
                 'starfish-script',
-                plugin_dir_url(__FILE__) . 'index.js',
+                $assets_url . '/index.js',
                 array('sortable-js'),
                 defined('STARFISH_VERSION') ? STARFISH_VERSION : '1.0.0',
                 true
@@ -1590,44 +1589,19 @@ if (!class_exists('StarFish')) {
             // 加载媒体上传器
             wp_enqueue_media();
         }
-        
-        /**
-         * 获取单个页面选项名称（旧版兼容，内部不再用于注册设置）
-         */
-        private function get_option_name($page_id) {
-            return 'starfish_' . sanitize_title($page_id);
-        }
 
+        
         /**
          * 获取全局选项名称
          */
-        private function get_global_option_name() {
-            return isset($this->config['option_name']) ? $this->config['option_name'] : 'starfish_settings';
-        }
-        
-        /**
-         * 获取选项值（全局辅助函数）
-         */
-        public static function get_option($field_id, $default = '') {
-            $instance = self::get_instance();
-            $option_name = $instance->get_global_option_name();
-            $all_options = get_option($option_name, array());
-            
-            if (isset($all_options[$field_id])) {
-                return $all_options[$field_id];
+        private function get_option_name() {
+            if (isset($this->config['option_name']) && !empty($this->config['option_name'])) {
+                return $this->config['option_name'];
             }
             
-            return $default;
+            return 'starfish_settings';
         }
         
-        /**
-         * 获取所有选项
-         */
-        public static function get_all_options($page_id) {
-            $option_name = 'starfish_settings';
-            $all_options = get_option($option_name, array());
-            return isset($all_options[$page_id]) ? $all_options[$page_id] : array();
-        }
         
         /**
          * 重置设置为默认值
@@ -1650,7 +1624,7 @@ if (!class_exists('StarFish')) {
                 }
             }
             
-            $global_option_name = $this->get_global_option_name();
+            $global_option_name = $this->get_option_name();
             update_option($global_option_name, $defaults);
             $this->options = $defaults;
         }
@@ -1702,24 +1676,19 @@ if (!class_exists('StarFish')) {
                 return;
             }
             
-            // 验证 MIME 类型
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mime_type = $finfo->file($file['tmp_name']);
-            $allowed_mime_types = array('application/json', 'text/plain', 'text/json');
-            if (!in_array($mime_type, $allowed_mime_types)) {
-                wp_send_json_error(array(
-                    'message' => __('Invalid file type. Only JSON files are allowed.', 'starfish')
-                ));
-                return;
-            }
-            
-            // 使用 WordPress 的文件类型检查进行额外验证
-            $wp_filetype = wp_check_filetype($file['name']);
-            if ($wp_filetype['ext'] !== 'json') {
-                wp_send_json_error(array(
-                    'message' => __('Invalid file extension.', 'starfish')
-                ));
-                return;
+            // 验证 MIME 类型（更宽松的验证）
+            $mime_type_valid = true;
+            if (class_exists('finfo')) {
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime_type = $finfo->file($file['tmp_name']);
+                $allowed_mime_types = array('application/json', 'text/plain', 'text/json', 'application/octet-stream');
+                
+                // 如果 MIME 类型不在允许列表中，但扩展名是 .json，我们仍然允许
+                // 因为某些系统可能无法正确识别 JSON 文件的 MIME 类型
+                if (!in_array($mime_type, $allowed_mime_types)) {
+                    // 记录日志但不阻止上传
+                    error_log('StarFish Import: MIME type detected: ' . $mime_type . ' for file: ' . $file['name']);
+                }
             }
             
             // 读取文件内容
@@ -1734,7 +1703,7 @@ if (!class_exists('StarFish')) {
             }
             
             // 导入数据到全局选项
-            $global_option_name = $this->get_global_option_name();
+            $global_option_name = $this->get_option_name();
             
             // 直接使用导入的数据覆盖现有数据
             update_option($global_option_name, $data);
@@ -1773,6 +1742,19 @@ if (!class_exists('StarFish')) {
             wp_send_json_success(array(
                 'message' => __('Successfully reset to default settings!', 'starfish')
             ));
+        }
+
+        /**
+         * 获取当前文件所在目录的 URL
+         * 原理：利用 $_SERVER['DOCUMENT_ROOT'] 和当前文件的物理路径进行替换
+         */
+        function starfish_get_assets_url() {
+            $current_dir = dirname(__FILE__);
+            $document_root = $_SERVER['DOCUMENT_ROOT'];
+            $relative_path = str_replace($document_root, '', $current_dir);
+            $relative_path = str_replace('\\', '/', $relative_path);
+            $base_url = site_url() . $relative_path;
+            return $base_url;
         }
 
     }
