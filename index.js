@@ -20,7 +20,97 @@
         initSliders();
         initBackupFields();
         initRemoveButtons();
+        
+        // 初始化页面上已存在的嵌套 Group
+        initializeAllNestedGroups();
     });
+    
+    /**
+     * 初始化所有已存在的嵌套 Group
+     */
+    function initializeAllNestedGroups() {
+        var allNestedGroups = document.querySelectorAll('.starfish-nested-group');
+        allNestedGroups.forEach(function(nestedGroup) {
+            // 如果已经初始化过，跳过
+            if (nestedGroup.hasAttribute('data-initialized')) {
+                return;
+            }
+            nestedGroup.setAttribute('data-initialized', 'true');
+            
+            // 初始化拖拽排序
+            if (typeof Sortable !== 'undefined') {
+                initGroupSortable(nestedGroup);
+            }
+            
+            // 绑定添加按钮
+            var fieldId = nestedGroup.getAttribute('data-field-id');
+            if (fieldId) {
+                var addBtn = nestedGroup.querySelector('.starfish-group-add[data-field-id="' + fieldId + '"]');
+                if (addBtn && !addBtn.hasAttribute('data-initialized')) {
+                    addBtn.setAttribute('data-initialized', 'true');
+                    
+                    var newAddBtn = addBtn.cloneNode(true);
+                    addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+                    
+                    newAddBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        var wrapper = this.closest('.starfish-group-wrapper');
+                        var itemsContainer = wrapper.querySelector('.starfish-group-items');
+                        var template = wrapper.querySelector('.starfish-group-template[data-field-id="' + fieldId + '"]');
+                        
+                        if (!template || !itemsContainer) return;
+                        
+                        var templateContent = template.textContent || template.innerHTML;
+                        var existingItems = itemsContainer.querySelectorAll('.starfish-group-item');
+                        var newIndex = existingItems.length;
+                        
+                        var newItemHtml = templateContent
+                            .replace(/__INDEX__/g, newIndex)
+                            .replace(/_INDEX_/g, '_' + newIndex + '_');
+                        
+                        var tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = newItemHtml.trim();
+                        var newItem = tempDiv.firstChild;
+                        
+                        itemsContainer.appendChild(newItem);
+                        updateGroupTitles(wrapper);
+                        bindGroupRemoveButton(newItem);
+                        
+                        var toggleButton = newItem.querySelector('.starfish-group-toggle');
+                        if (toggleButton) {
+                            bindGroupToggleButton(toggleButton);
+                        }
+                        
+                        initializeSpecialFieldsInItem(newItem, fieldId, newIndex);
+                        
+                        if (typeof Sortable !== 'undefined') {
+                            initGroupSortable(wrapper);
+                        }
+                        
+                        updateGroupHiddenValue(wrapper);
+                    });
+                }
+            }
+            
+            // 绑定现有的删除和展开按钮
+            var removeButtons = nestedGroup.querySelectorAll('.starfish-group-remove');
+            removeButtons.forEach(function(button) {
+                var item = button.closest('.starfish-group-item');
+                if (item) {
+                    bindGroupRemoveButton(item);
+                }
+            });
+            
+            var toggleButtons = nestedGroup.querySelectorAll('.starfish-group-toggle');
+            toggleButtons.forEach(function(button) {
+                bindGroupToggleButton(button);
+            });
+            
+            // 初始化隐藏字段值
+            updateGroupHiddenValue(nestedGroup);
+        });
+    }
     
     /**
      * 初始化字段依赖
@@ -661,9 +751,10 @@
                 var name = input.getAttribute('name');
                 if (name) {
                     // 替换 name 中的索引部分：[fieldId][oldIndex][subField] -> [fieldId][newIndex][subField]
+                    // 使用更精确的正则，只替换第一层索引
                     var newName = name.replace(
-                        new RegExp('\\[' + fieldId + '\\]\\[\\d+\\]\\[', 'g'),
-                        '[' + fieldId + '][' + index + ']['
+                        new RegExp('(\\[' + fieldId + '\\])\\[\\d+\\](\\[)', 'g'),
+                        '$1[' + index + ']$2'
                     );
                     input.setAttribute('name', newName);
                 }
@@ -672,10 +763,36 @@
                 var id = input.getAttribute('id');
                 if (id) {
                     var newId = id.replace(
-                        new RegExp('_' + fieldId + '_\\d+_', 'g'),
-                        '_' + fieldId + '_' + index + '_'
+                        new RegExp('(_' + fieldId + '_)\d+(_)', 'g'),
+                        '$1' + index + '$2'
                     );
                     input.setAttribute('id', newId);
+                }
+            });
+            
+            // 更新嵌套 Group 的 data-field-id 属性（如果需要）
+            var nestedGroups = item.querySelectorAll('.starfish-nested-group');
+            nestedGroups.forEach(function(nestedGroup) {
+                var nestedFieldId = nestedGroup.getAttribute('data-field-id');
+                if (nestedFieldId) {
+                    // 更新嵌套 group 模板中的占位符
+                    var template = nestedGroup.querySelector('.starfish-group-template');
+                    if (template) {
+                        // 模板不需要更新，保持原样
+                    }
+                    
+                    // 更新隐藏字段的 name
+                    var hiddenInput = nestedGroup.querySelector('.starfish-group-hidden-value');
+                    if (hiddenInput) {
+                        var hiddenName = hiddenInput.getAttribute('name');
+                        if (hiddenName) {
+                            var newHiddenName = hiddenName.replace(
+                                new RegExp('(\\[' + fieldId + '\\])\\[\\d+\\](\\[)', 'g'),
+                                '$1[' + index + ']$2'
+                            );
+                            hiddenInput.setAttribute('name', newHiddenName);
+                        }
+                    }
                 }
             });
         });
@@ -721,6 +838,9 @@
         // 统一绑定其他特殊字段事件
         bindFieldEvents(item);
         
+        // 初始化嵌套 Group 字段
+        initializeNestedGroups(item);
+        
         // 调试：检查是否找到了按钮
         var imageButtons = item.querySelectorAll('.starfish-image-button');
         // console.log('Found image buttons:', imageButtons.length);
@@ -730,6 +850,109 @@
         
         var galleryButtons = item.querySelectorAll('.starfish-gallery-button');
         // console.log('Found gallery buttons:', galleryButtons.length);
+    }
+    
+    /**
+     * 初始化嵌套 Group 字段
+     */
+    function initializeNestedGroups(container) {
+        // 查找容器中的所有嵌套 Group
+        var nestedGroups = container.querySelectorAll('.starfish-nested-group');
+        
+        nestedGroups.forEach(function(nestedGroup) {
+            var fieldId = nestedGroup.getAttribute('data-field-id');
+            if (!fieldId) return;
+            
+            // 如果已经初始化过，跳过
+            if (nestedGroup.hasAttribute('data-initialized')) {
+                return;
+            }
+            nestedGroup.setAttribute('data-initialized', 'true');
+            
+            // 初始化拖拽排序
+            if (typeof Sortable !== 'undefined') {
+                initGroupSortable(nestedGroup);
+            }
+            
+            // 绑定添加按钮
+            var addBtn = nestedGroup.querySelector('.starfish-group-add[data-field-id="' + fieldId + '"]');
+            if (addBtn) {
+                // 移除旧的事件监听器
+                var newAddBtn = addBtn.cloneNode(true);
+                addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+                
+                newAddBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    var wrapper = this.closest('.starfish-group-wrapper');
+                    var itemsContainer = wrapper.querySelector('.starfish-group-items');
+                    var template = wrapper.querySelector('.starfish-group-template[data-field-id="' + fieldId + '"]');
+                    
+                    if (!template || !itemsContainer) return;
+                    
+                    // 获取模板内容
+                    var templateContent = template.textContent || template.innerHTML;
+                    
+                    // 计算新索引
+                    var existingItems = itemsContainer.querySelectorAll('.starfish-group-item');
+                    var newIndex = existingItems.length;
+                    
+                    // 替换占位符
+                    var newItemHtml = templateContent
+                        .replace(/__INDEX__/g, newIndex)
+                        .replace(/_INDEX_/g, '_' + newIndex + '_');
+                    
+                    // 创建新元素
+                    var tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = newItemHtml.trim();
+                    var newItem = tempDiv.firstChild;
+                    
+                    // 添加到容器
+                    itemsContainer.appendChild(newItem);
+                    
+                    // 更新组标题
+                    updateGroupTitles(wrapper);
+                    
+                    // 绑定删除按钮
+                    bindGroupRemoveButton(newItem);
+                    
+                    // 绑定展开/收起按钮
+                    var toggleButton = newItem.querySelector('.starfish-group-toggle');
+                    if (toggleButton) {
+                        bindGroupToggleButton(toggleButton);
+                    }
+                    
+                    // 初始化新项中的特殊字段（包括递归初始化嵌套 group）
+                    initializeSpecialFieldsInItem(newItem, fieldId, newIndex);
+                    
+                    // 重新初始化拖拽排序
+                    if (typeof Sortable !== 'undefined') {
+                        initGroupSortable(wrapper);
+                    }
+                    
+                    // 更新隐藏字段的值
+                    updateGroupHiddenValue(wrapper);
+                });
+            }
+            
+            // 绑定现有的删除按钮
+            var removeButtons = nestedGroup.querySelectorAll('.starfish-group-remove');
+            removeButtons.forEach(function(button) {
+                var item = button.closest('.starfish-group-item');
+                if (item) {
+                    bindGroupRemoveButton(item);
+                }
+            });
+            
+            // 绑定展开/收起按钮
+            var toggleButtons = nestedGroup.querySelectorAll('.starfish-group-toggle');
+            toggleButtons.forEach(function(button) {
+                bindGroupToggleButton(button);
+            });
+            
+            // 初始化隐藏字段值
+            updateGroupHiddenValue(nestedGroup);
+        });
     }
     
     /**
@@ -767,8 +990,18 @@
     function bindGroupToggleButton(button) {
         if (!button) return;
         
+        // 如果已经绑定过，先移除旧的事件
+        if (button.hasAttribute('data-toggle-bound')) {
+            var newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+            button = newButton;
+        }
+        
+        button.setAttribute('data-toggle-bound', 'true');
+        
         button.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             
             var item = button.closest('.starfish-group-item');
             if (!item) return;

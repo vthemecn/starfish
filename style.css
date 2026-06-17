@@ -613,6 +613,38 @@
   }
 }
 
+/* ==================== 嵌套 Group 样式 ==================== */
+.starfish-nested-group {
+  margin: 15px 0;
+  border: 1px solid #dcdcde;
+  background: #f9f9f9;
+}
+
+.starfish-nested-group .starfish-group-header {
+  background: #f0f0f1;
+}
+
+.starfish-nested-group .starfish-group-content {
+  padding: 12px;
+  background: #fff;
+}
+
+.starfish-nested-group .starfish-group-item {
+  background: #fff;
+  border-color: #dcdcde;
+}
+
+.starfish-nested-group .starfish-sub-field {
+  margin: 8px 0;
+}
+
+/* 嵌套层级缩进 */
+.starfish-nested-group .starfish-nested-group {
+  margin-left: 20px;
+  margin-right: 20px;
+  border-left: 3px solid #2271b1;
+}
+
 /* ==================== 排序器（双列表拖拽）==================== */
 .starfish-sorter-dual-wrapper {
   width: 100%;
