@@ -180,12 +180,24 @@ $config = array(
                             'title' => '职位',
                             'placeholder' => '输入职位',
                         ),
-                        // array(
-                        //     'id' => 'email',
-                        //     'type' => 'text',
-                        //     'title' => '邮箱',
-                        //     'placeholder' => '输入邮箱',
-                        // ),
+                        array(
+                            'id' => 'members-text',
+                            'type' => 'group',
+                            'title' => '子group测试',
+                            'button_title' => '添加子项',
+                            'fields' => array(
+                                array(
+                                    'id' => 'name1',
+                                    'type' => 'text',
+                                    'title' => '姓名1',
+                                ),
+                                array(
+                                    'id' => 'name2',
+                                    'type' => 'text',
+                                    'title' => '姓名2'
+                                ),
+                            )
+                        )
                     ),
                     'default' => array(),
                 ),
